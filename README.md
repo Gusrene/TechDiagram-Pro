@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="es" class="h-full">
 <head>
@@ -2723,3 +2724,7 @@
   </script>
 </body>
 </html>
+=======
+# TechDiagram-Pro-
+Diagramar proyectos especiales
+>>>>>>> 1243fde132c0bfede499ffc2ca6a3910d2bb1e14
