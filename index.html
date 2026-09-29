@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TechDiagram Pro - CCTV, Redes, Fotovoltaica & BESS</title>
+    
+    <!-- LIBRERÍA PDF.JS PARA LEER PLANOS PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        // Configurar el worker de PDF.js (necesario para decodificar)
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
+
     <style>
         :root {
             --bg-dark: #0f172a;
@@ -107,7 +115,6 @@
             cursor: grab;
         }
         .canvas-container:active { cursor: grabbing; }
-
         canvas { position: absolute; top: 0; left: 0; }
 
         /* Floating Toolbar */
@@ -124,8 +131,6 @@
             gap: 6px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             z-index: 8;
-            flex-wrap: wrap;
-            justify-content: center;
         }
 
         .tool-btn {
@@ -221,14 +226,16 @@
     </style>
 </head>
 <body>
-
     <header>
         <div class="logo">⚡🎥 TechDiagram Pro</div>
         <div class="top-tools">
             <button class="btn" onclick="openProjectManager()">📁 Mis Proyectos</button>
             <button class="btn" onclick="saveCurrentProjectPrompt()">💾 Guardar Proy.</button>
-            <button class="btn" onclick="document.getElementById('plan-upload').click()">📐 Subir Plano</button>
-            <input type="file" id="plan-upload" accept="image/*,.svg" style="display:none" onchange="handlePlanUpload(event)">
+            
+            <!-- Entrada de archivo actualizada para aceptar PDF también -->
+            <button class="btn btn-primary" onclick="document.getElementById('plan-upload').click()">📐 Subir Plano (PDF/IMG)</button>
+            <input type="file" id="plan-upload" accept="image/*,application/pdf" style="display:none" onchange="handlePlanUpload(event)">
+            
             <button class="btn" onclick="openSolarCalcModal()">⚡ Calc. Solar</button>
             <button class="btn" onclick="openBomModal()">📋 BOM / Materiales</button>
             <button class="btn btn-success" onclick="exportJSON()">💾 Exportar JSON</button>
@@ -238,77 +245,43 @@
     </header>
 
     <div class="workspace">
-        <!-- Sidebar Left: Component Library -->
         <div class="sidebar-left">
             <div class="search-box">
                 <input type="text" id="search-comp" placeholder="Buscar componente..." onkeyup="filterComponents()">
             </div>
             <div class="lib-categories" id="library-container">
-                <!-- CCTV -->
                 <div class="cat-title">CCTV & Seguridad</div>
                 <div class="component-grid">
-                    <div class="comp-item" onclick="addNode('cctv_ip', 'Cámara IP Bullet 4K', '📷')">
-                        <span class="icon">📷</span>Cámara IP 4K
-                    </div>
-                    <div class="comp-item" onclick="addNode('cctv_ptz', 'Cámara PTZ IP', '📹')">
-                        <span class="icon">📹</span>Cámara PTZ
-                    </div>
-                    <div class="comp-item" onclick="addNode('nvr', 'Servidor NVR 32CH', '🖥️')">
-                        <span class="icon">🖥️</span>NVR / VMS
-                    </div>
-                    <div class="comp-item" onclick="addNode('access_ctrl', 'Controlador Acceso IP', '🚪')">
-                        <span class="icon">🚪</span>Control Acceso
-                    </div>
+                    <div class="comp-item" onclick="addNode('cctv_ip', 'Cámara IP Bullet 4K', '📷')"><span class="icon">📷</span>Cámara IP 4K</div>
+                    <div class="comp-item" onclick="addNode('cctv_ptz', 'Cámara PTZ IP', '📹')"><span class="icon">📹</span>Cámara PTZ</div>
+                    <div class="comp-item" onclick="addNode('nvr', 'Servidor NVR 32CH', '🖥️️')"><span class="icon">🖥️</span>NVR / VMS</div>
+                    <div class="comp-item" onclick="addNode('access_ctrl', 'Controlador Acceso IP', '🚪')"><span class="icon">🚪</span>Control Acceso</div>
                 </div>
 
-                <!-- Redes & Telecom -->
                 <div class="cat-title">Redes & Telecom</div>
                 <div class="component-grid">
-                    <div class="comp-item" onclick="addNode('switch_poe', 'Switch 24p PoE+', '🔀')">
-                        <span class="icon">🔀</span>Switch PoE+
-                    </div>
-                    <div class="comp-item" onclick="addNode('router', 'Router / Firewall', '🌐')">
-                        <span class="icon">🌐</span>Router Borde
-                    </div>
-                    <div class="comp-item" onclick="addNode('ap_wifi', 'AP Wi-Fi 6 IP67', '📶')">
-                        <span class="icon">📶</span>AP Wi-Fi 6
-                    </div>
-                    <div class="comp-item" onclick="addNode('rack', 'Gabinete Rack 22U', '🗄️')">
-                        <span class="icon">🗄️</span>Rack / Gabinete
-                    </div>
+                    <div class="comp-item" onclick="addNode('switch_poe', 'Switch 24p PoE+', '🔀')"><span class="icon">🔀</span>Switch PoE+</div>
+                    <div class="comp-item" onclick="addNode('router', 'Router / Firewall', '🌐')"><span class="icon">🌐</span>Router Borde</div>
+                    <div class="comp-item" onclick="addNode('ap_wifi', 'AP Wi-Fi 6 IP67', '📶')"><span class="icon">📶</span>AP Wi-Fi 6</div>
+                    <div class="comp-item" onclick="addNode('rack', 'Gabinete Rack 22U', '🗄️️')"><span class="icon">🗄️</span>Rack / Gabinete</div>
                 </div>
 
-                <!-- Fotovoltaico & BESS -->
                 <div class="cat-title">Solar & BESS</div>
                 <div class="component-grid">
-                    <div class="comp-item" onclick="addNode('pv_module', 'Panel Solar 580W TOPCon', '☀️')">
-                        <span class="icon">☀️</span>Panel 580W
-                    </div>
-                    <div class="comp-item" onclick="addNode('pv_inverter', 'Inversor Híbrido 10kW', '⚡')">
-                        <span class="icon">⚡</span>Inv. Híbrido
-                    </div>
-                    <div class="comp-item" onclick="addNode('bess_rack', 'Batería LiFePO4 15kWh', '🔋')">
-                        <span class="icon">🔋</span>BESS LiFePO4
-                    </div>
-                    <div class="comp-item" onclick="addNode('pv_combiner', 'Combiner Box DC', '🔲')">
-                        <span class="icon">🔲</span>Combiner Box
-                    </div>
+                    <div class="comp-item" onclick="addNode('pv_module', 'Panel Solar 580W TOPCon', '☀️')"><span class="icon">☀️</span>Panel 580W</div>
+                    <div class="comp-item" onclick="addNode('pv_inverter', 'Inversor Híbrido 10kW', '⚡')"><span class="icon">⚡</span>Inv. Híbrido</div>
+                    <div class="comp-item" onclick="addNode('bess_rack', 'Batería LiFePO4 15kWh', '🔋')"><span class="icon">🔋</span>BESS LiFePO4</div>
+                    <div class="comp-item" onclick="addNode('pv_combiner', 'Combiner Box DC', '🔲')"><span class="icon">🔲</span>Combiner Box</div>
                 </div>
 
-                <!-- Canalizaciones -->
                 <div class="cat-title">Canalizaciones & Cajas</div>
                 <div class="component-grid">
-                    <div class="comp-item" onclick="addNode('box_4x4', 'Caja de Paso 4x4', '📦')">
-                        <span class="icon">📦</span>Caja Paso 4"x4"
-                    </div>
-                    <div class="comp-item" onclick="addNode('pull_box', 'Registro de Halado NEMA', '🔲')">
-                        <span class="icon">🔲</span>Reg. NEMA
-                    </div>
+                    <div class="comp-item" onclick="addNode('box_4x4', 'Caja de Paso 4x4', '📦')"><span class="icon">📦</span>Caja Paso 4"x4"</div>
+                    <div class="comp-item" onclick="addNode('pull_box', 'Registro de Halado NEMA', '🔲')"><span class="icon">🔲</span>Reg. NEMA</div>
                 </div>
             </div>
         </div>
 
-        <!-- Central Canvas -->
         <div class="canvas-container" id="canvas-container">
             <div class="floating-toolbar">
                 <button class="tool-btn active" id="tool-select" onclick="setMode('select')">👆 Seleccionar</button>
@@ -320,31 +293,17 @@
             <canvas id="mainCanvas"></canvas>
         </div>
 
-        <!-- Sidebar Right: Inspector & Real-time Metrics -->
         <div class="sidebar-right">
             <div class="panel-section">
                 <div class="panel-title">📊 Resumen de Cargas</div>
                 <div class="metrics-grid">
-                    <div class="metric-card">
-                        <div class="metric-value" id="m-poe">0 W</div>
-                        <div class="metric-label">Consumo PoE</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value" id="m-pv">0 kWp</div>
-                        <div class="metric-label">Potencia Solar</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value" id="m-bess">0 kWh</div>
-                        <div class="metric-label">Capacidad BESS</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-value" id="m-pathway">0 m</div>
-                        <div class="metric-label">Canalización</div>
-                    </div>
+                    <div class="metric-card"><div class="metric-value" id="m-poe">0 W</div><div class="metric-label">Consumo PoE</div></div>
+                    <div class="metric-card"><div class="metric-value" id="m-pv">0 kWp</div><div class="metric-label">Potencia Solar</div></div>
+                    <div class="metric-card"><div class="metric-value" id="m-bess">0 kWh</div><div class="metric-label">Capacidad BESS</div></div>
+                    <div class="metric-card"><div class="metric-value" id="m-pathway">0 m</div><div class="metric-label">Canalización</div></div>
                 </div>
             </div>
 
-            <!-- Inspector Panel -->
             <div class="panel-section" style="flex: 1; overflow-y: auto;" id="inspector-panel">
                 <div class="panel-title">⚙️ Inspector de Propiedades</div>
                 <div id="inspector-content">
@@ -381,26 +340,13 @@
                 <button class="btn btn-danger" onclick="closeModal('modal-solar')">X</button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label>Módulos en Serie por String (N):</label>
-                    <input type="number" id="calc-string-n" value="16" onchange="recalcSolarEngine()">
-                </div>
-                <div class="form-group">
-                    <label>Temperatura Mínima Sitio (°C):</label>
-                    <input type="number" id="calc-temp-min" value="-5" onchange="recalcSolarEngine()">
-                </div>
-                <div class="form-group">
-                    <label>Horas Sol Pico Diarias (HSP):</label>
-                    <input type="number" id="calc-hsp" value="5.2" step="0.1" onchange="recalcSolarEngine()">
-                </div>
+                <div class="form-group"><label>Módulos en Serie por String (N):</label><input type="number" id="calc-string-n" value="16" onchange="recalcSolarEngine()"></div>
+                <div class="form-group"><label>Temperatura Mínima Sitio (°C):</label><input type="number" id="calc-temp-min" value="-5" onchange="recalcSolarEngine()"></div>
+                <div class="form-group"><label>Horas Sol Pico Diarias (HSP):</label><input type="number" id="calc-hsp" value="5.2" step="0.1" onchange="recalcSolarEngine()"></div>
                 <hr style="border-color: var(--border-color); margin: 12px 0;">
-                <div id="solar-calc-results">
-                    <!-- Dynamic Output -->
-                </div>
+                <div id="solar-calc-results"></div>
             </div>
-            <div class="modal-footer">
-                <button class="btn" onclick="closeModal('modal-solar')">Cerrar</button>
-            </div>
+            <div class="modal-footer"><button class="btn" onclick="closeModal('modal-solar')">Cerrar</button></div>
         </div>
     </div>
 
@@ -413,14 +359,7 @@
             </div>
             <div class="modal-body">
                 <table id="bom-table">
-                    <thead>
-                        <tr>
-                            <th>Categoría</th>
-                            <th>Descripción</th>
-                            <th>Cantidad / Metros</th>
-                            <th>Norma / Holgura</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Categoría</th><th>Descripción</th><th>Cantidad / Metros</th><th>Norma / Holgura</th></tr></thead>
                     <tbody id="bom-table-body"></tbody>
                 </table>
             </div>
@@ -434,30 +373,19 @@
     <div class="toast" id="toast">Notificación</div>
 
     <script>
-        // App State
         let canvas, ctx;
-        let scale = 1;
-        let panX = 0, panY = 0;
+        let scale = 1, panX = 0, panY = 0;
         let currentMode = 'select'; // 'select', 'wire', 'pathway'
         
-        let nodes = [];
-        let connections = [];
-        let pathways = [];
-        
-        let selectedNode = null;
-        let selectedConnection = null;
-        let selectedPathway = null;
-        let wireStartNode = null;
-        
-        let bgImage = null;
-        let bgScaleRatio = 20.0; // px to meters ratio (default 20px = 1m)
+        let nodes = [], connections = [], pathways = [];
+        let selectedNode = null, selectedConnection = null, selectedPathway = null, wireStartNode = null;
+        let bgImage = null, bgScaleRatio = 20.0; // 20px = 1m (default)
 
         window.onload = function() {
             canvas = document.getElementById('mainCanvas');
             ctx = canvas.getContext('2d');
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
-            
             setupCanvasEvents();
             setupKeyboardShortcuts();
             render();
@@ -481,9 +409,7 @@
         function setMode(mode) {
             currentMode = mode;
             document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-            if(mode === 'select') document.getElementById('tool-select').classList.add('active');
-            if(mode === 'wire') document.getElementById('tool-wire').classList.add('active');
-            if(mode === 'pathway') document.getElementById('tool-pathway').classList.add('active');
+            document.getElementById('tool-' + mode)?.classList.add('active');
             wireStartNode = null;
             showToast("Modo: " + mode.toUpperCase());
         }
@@ -513,26 +439,23 @@
             ctx.translate(panX, panY);
             ctx.scale(scale, scale);
 
-            // Draw Background Plan
             if (bgImage) {
-                ctx.globalAlpha = 0.5; // Hacer el plano semi-transparente
+                ctx.globalAlpha = 0.6; // Opacidad del plano
                 ctx.drawImage(bgImage, 0, 0);
                 ctx.globalAlpha = 1.0;
             } else {
                 drawGrid();
             }
 
-            // Draw Pathways
             pathways.forEach(p => {
                 ctx.beginPath();
                 ctx.moveTo(p.x1, p.y1);
                 ctx.lineTo(p.x2, p.y2);
-                ctx.lineWidth = selectedPathway === p ? 6 : 4;
+                ctx.lineWidth = selectedPathway === p ? 8 : 6;
                 ctx.strokeStyle = p.type && p.type.includes('tray') ? '#f59e0b' : '#38bdf8';
                 ctx.stroke();
             });
 
-            // Draw Connections
             connections.forEach(c => {
                 const n1 = nodes.find(n => n.id === c.from);
                 const n2 = nodes.find(n => n.id === c.to);
@@ -546,65 +469,29 @@
                 }
             });
 
-            // Draw Nodes
             nodes.forEach(n => {
                 ctx.fillStyle = selectedNode === n ? '#38bdf8' : '#1e293b';
                 ctx.strokeStyle = selectedNode === n ? '#22c55e' : '#475569';
                 ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.arc(n.x, n.y, 22, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-
-                ctx.font = '18px Segoe UI';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
+                ctx.beginPath(); ctx.arc(n.x, n.y, 22, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+                ctx.font = '18px Segoe UI'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff';
                 ctx.fillText(n.icon, n.x, n.y);
-
-                ctx.font = '11px Segoe UI';
-                ctx.fillStyle = '#f8fafc';
-                ctx.fillText(n.name, n.x, n.y + 35);
+                ctx.font = '11px Segoe UI'; ctx.fillText(n.name, n.x, n.y + 35);
             });
 
             ctx.restore();
         }
 
         function drawGrid() {
-            const gridSize = 40;
-            ctx.strokeStyle = '#1e293b';
-            ctx.lineWidth = 0.5;
-            for (let x = 0; x < canvas.width * 2; x += gridSize) {
-                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height * 2); ctx.stroke();
-            }
-            for (let y = 0; y < canvas.height * 2; y += gridSize) {
-                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width * 2, y); ctx.stroke();
-            }
+            const gridSize = 40; ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 0.5;
+            for (let x = 0; x < canvas.width * 2; x += gridSize) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height * 2); ctx.stroke(); }
+            for (let y = 0; y < canvas.height * 2; y += gridSize) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width * 2, y); ctx.stroke(); }
         }
 
-        // Selection & Inspector
-        function selectNode(node) {
-            selectedNode = node; selectedConnection = null; selectedPathway = null;
-            renderInspector();
-            render();
-        }
-
-        function selectConnection(conn) {
-            selectedConnection = conn; selectedNode = null; selectedPathway = null;
-            renderInspector();
-            render();
-        }
-
-        function selectPathway(path) {
-            selectedPathway = path; selectedNode = null; selectedConnection = null;
-            renderInspector();
-            render();
-        }
-
-        function deselectAll() {
-            selectedNode = null; selectedConnection = null; selectedPathway = null;
-            renderInspector();
-            render();
-        }
+        function selectNode(node) { selectedNode = node; selectedConnection = null; selectedPathway = null; renderInspector(); render(); }
+        function selectConnection(conn) { selectedConnection = conn; selectedNode = null; selectedPathway = null; renderInspector(); render(); }
+        function selectPathway(path) { selectedPathway = path; selectedNode = null; selectedConnection = null; renderInspector(); render(); }
+        function deselectAll() { selectedNode = null; selectedConnection = null; selectedPathway = null; renderInspector(); render(); }
 
         function deleteSelected() {
             if (selectedNode) {
@@ -621,25 +508,20 @@
             renderInspector();
             render();
             updateMetrics();
-            showToast("Elemento eliminado");
         }
 
-        function clearCanvas() {
-            if(confirm("¿Deseas borrar todo el diseño actual?")) {
-                nodes = []; connections = []; pathways = []; deselectAll(); updateMetrics();
-            }
-        }
+        function clearCanvas() { if(confirm("¿Borrar todo el diseño?")) { nodes = []; connections = []; pathways = []; bgImage = null; deselectAll(); updateMetrics(); } }
 
         function renderInspector() {
             const container = document.getElementById('inspector-content');
             if (selectedNode) {
                 container.innerHTML = `
                     <div class="form-group"><label>Nombre:</label><input type="text" value="${selectedNode.name}" onchange="selectedNode.name=this.value; render();"></div>
-                    <div class="form-group"><label>Dirección IP / ID:</label><input type="text" value="${selectedNode.ip || ''}" onchange="selectedNode.ip=this.value;"></div>
+                    <div class="form-group"><label>IP / ID:</label><input type="text" value="${selectedNode.ip || ''}" onchange="selectedNode.ip=this.value;"></div>
                     <div class="form-group"><label>Consumo PoE (W):</label><input type="number" value="${selectedNode.powerPoE || 0}" onchange="selectedNode.powerPoE=Number(this.value); updateMetrics();"></div>
                     <div class="form-group"><label>Potencia Solar (W):</label><input type="number" value="${selectedNode.pvPowerW || 0}" onchange="selectedNode.pvPowerW=Number(this.value); updateMetrics();"></div>
                     <div class="form-group"><label>BESS Batería (kWh):</label><input type="number" value="${selectedNode.bessKwh || 0}" onchange="selectedNode.bessKwh=Number(this.value); updateMetrics();"></div>
-                    <button class="btn btn-danger" style="width:100%; margin-top:10px;" onclick="deleteSelected()">🗑️ Eliminar Dispositivo</button>
+                    <button class="btn btn-danger" style="width:100%; margin-top:10px;" onclick="deleteSelected()">🗑️ Eliminar</button>
                 `;
             } else if (selectedPathway) {
                 const lengthM = (Math.hypot(selectedPathway.x2 - selectedPathway.x1, selectedPathway.y2 - selectedPathway.y1) / bgScaleRatio).toFixed(2);
@@ -647,15 +529,14 @@
                     <div class="form-group"><label>Tipo de Canalización:</label>
                         <select onchange="selectedPathway.type=this.value; render();">
                             <option value="emt_34" ${selectedPathway.type==='emt_34'?'selected':''}>Tubería EMT 3/4"</option>
-                            <option value="emt_1" ${selectedPathway.type==='emt_1'?'selected':''}>Tubería EMT 1"</option>
                             <option value="tray_mesh" ${selectedPathway.type==='tray_mesh'?'selected':''}>Bandeja Malla 150mm</option>
                         </select>
                     </div>
-                    <p style="font-size:0.85rem; color:var(--accent);"><strong>Longitud Estimada:</strong> ${lengthM} m</p>
-                    <button class="btn btn-danger" style="width:100%; margin-top:10px;" onclick="deleteSelected()">🗑️ Eliminar Tramo</button>
+                    <p style="font-size:0.85rem; color:var(--accent);"><strong>Longitud:</strong> ${lengthM} m</p>
+                    <button class="btn btn-danger" style="width:100%; margin-top:10px;" onclick="deleteSelected()">🗑️ Eliminar</button>
                 `;
             } else {
-                container.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-muted);">Selecciona un elemento para editar sus parámetros.</p>';
+                container.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-muted);">Selecciona un elemento.</p>';
             }
         }
 
@@ -671,10 +552,8 @@
             document.getElementById('m-pathway').innerText = pathM.toFixed(1) + ' m';
         }
 
-        // Canvas Events
-        let isDragging = false, dragStartX, dragStartY;
-        let isDrawingPathway = false, pathStartX, pathStartY;
-        let isPanning = false, panStartX, panStartY;
+        let isDragging = false, isPanning = false, isDrawingPathway = false;
+        let dragStartX, dragStartY, panStartX, panStartY, pathStartX, pathStartY;
 
         function setupCanvasEvents() {
             canvas.addEventListener('mousedown', e => {
@@ -682,93 +561,43 @@
                 const mx = (e.clientX - rect.left - panX) / scale;
                 const my = (e.clientY - rect.top - panY) / scale;
 
-                // Si se presiona el botón derecho o la rueda del ratón, iniciar paneo
-                if (e.button === 1 || e.button === 2) {
-                    isPanning = true;
-                    panStartX = e.clientX - panX;
-                    panStartY = e.clientY - panY;
-                    return;
+                if (e.button === 1 || e.button === 2) { // Middle or right click for panning
+                    isPanning = true; panStartX = e.clientX - panX; panStartY = e.clientY - panY; return;
                 }
 
                 const clickedNode = nodes.find(n => Math.hypot(n.x - mx, n.y - my) < 25);
+                let clickedPathway = null;
+                
+                if (!clickedNode) {
+                    for (const p of pathways) {
+                        const A = mx - p.x1, B = my - p.y1, C = p.x2 - p.x1, D = p.y2 - p.y1;
+                        const len_sq = C * C + D * D;
+                        let param = -1;
+                        if (len_sq != 0) param = (A * C + B * D) / len_sq;
+                        let xx, yy;
+                        if (param < 0) { xx = p.x1; yy = p.y1; } else if (param > 1) { xx = p.x2; yy = p.y2; } else { xx = p.x1 + param * C; yy = p.y1 + param * D; }
+                        if (Math.hypot(mx - xx, my - yy) < 10 / scale) { clickedPathway = p; break; }
+                    }
+                }
 
                 if (currentMode === 'select') {
-                    if (clickedNode) {
-                        selectNode(clickedNode);
-                        isDragging = true;
-                        dragStartX = mx - clickedNode.x;
-                        dragStartY = my - clickedNode.y;
-                    } else {
-                        // Check if a pathway was clicked
-                        let clickedPathway = null;
-                        for (const p of pathways) {
-                            // Simple line distance check
-                            const A = mx - p.x1;
-                            const B = my - p.y1;
-                            const C = p.x2 - p.x1;
-                            const D = p.y2 - p.y1;
-                            
-                            const dot = A * C + B * D;
-                            const len_sq = C * C + D * D;
-                            let param = -1;
-                            if (len_sq != 0) param = dot / len_sq;
-                            
-                            let xx, yy;
-                            if (param < 0) { xx = p.x1; yy = p.y1; }
-                            else if (param > 1) { xx = p.x2; yy = p.y2; }
-                            else { xx = p.x1 + param * C; yy = p.y1 + param * D; }
-                            
-                            const dx = mx - xx;
-                            const dy = my - yy;
-                            if (Math.sqrt(dx * dx + dy * dy) < 10 / scale) {
-                                clickedPathway = p;
-                                break;
-                            }
-                        }
-
-                        if (clickedPathway) {
-                            selectPathway(clickedPathway);
-                        } else {
-                            deselectAll();
-                            // Iniciar paneo con click izquierdo si no se tocó nada
-                            isPanning = true;
-                            panStartX = e.clientX - panX;
-                            panStartY = e.clientY - panY;
-                        }
-                    }
-                } else if (currentMode === 'wire') {
-                    if (clickedNode) {
-                        if (!wireStartNode) {
-                            wireStartNode = clickedNode;
-                            showToast("Origen: " + clickedNode.name);
-                        } else if (wireStartNode !== clickedNode) {
-                            connections.push({ id: 'c_' + Date.now(), from: wireStartNode.id, to: clickedNode.id, type: 'cat6' });
-                            wireStartNode = null;
-                            render();
-                            showToast("Conexión realizada");
-                        }
-                    }
+                    if (clickedNode) { selectNode(clickedNode); isDragging = true; dragStartX = mx - clickedNode.x; dragStartY = my - clickedNode.y; }
+                    else if (clickedPathway) { selectPathway(clickedPathway); }
+                    else { deselectAll(); isPanning = true; panStartX = e.clientX - panX; panStartY = e.clientY - panY; }
+                } else if (currentMode === 'wire' && clickedNode) {
+                    if (!wireStartNode) { wireStartNode = clickedNode; showToast("Origen: " + clickedNode.name); }
+                    else if (wireStartNode !== clickedNode) { connections.push({ id: 'c_' + Date.now(), from: wireStartNode.id, to: clickedNode.id, type: 'cat6' }); wireStartNode = null; render(); }
                 } else if (currentMode === 'pathway') {
-                    isDrawingPathway = true;
-                    pathStartX = mx; pathStartY = my;
+                    isDrawingPathway = true; pathStartX = mx; pathStartY = my;
                 }
             });
 
             canvas.addEventListener('mousemove', e => {
-                if (isPanning) {
-                    panX = e.clientX - panStartX;
-                    panY = e.clientY - panStartY;
-                    render();
-                    return;
-                }
-
-                const rect = canvas.getBoundingClientRect();
-                const mx = (e.clientX - rect.left - panX) / scale;
-                const my = (e.clientY - rect.top - panY) / scale;
-
+                if (isPanning) { panX = e.clientX - panStartX; panY = e.clientY - panStartY; render(); return; }
                 if (isDragging && selectedNode) {
-                    selectedNode.x = mx - dragStartX;
-                    selectedNode.y = my - dragStartY;
+                    const rect = canvas.getBoundingClientRect();
+                    selectedNode.x = (e.clientX - rect.left - panX) / scale - dragStartX;
+                    selectedNode.y = (e.clientY - rect.top - panY) / scale - dragStartY;
                     render();
                 }
             });
@@ -778,70 +607,97 @@
                     const rect = canvas.getBoundingClientRect();
                     const mx = (e.clientX - rect.left - panX) / scale;
                     const my = (e.clientY - rect.top - panY) / scale;
-
                     if (Math.hypot(mx - pathStartX, my - pathStartY) > 10) {
                         pathways.push({ id: 'p_' + Date.now(), x1: pathStartX, y1: pathStartY, x2: mx, y2: my, type: 'emt_34' });
-                        render();
-                        updateMetrics();
+                        render(); updateMetrics();
                     }
                     isDrawingPathway = false;
                 }
-                isDragging = false;
-                isPanning = false;
+                isDragging = false; isPanning = false;
             });
 
-            // Prevent context menu on right click
             canvas.addEventListener('contextmenu', e => e.preventDefault());
-
-            // Zoom with mouse wheel
             canvas.addEventListener('wheel', e => {
                 e.preventDefault();
                 const zoomIntensity = 0.1;
                 const wheel = e.deltaY < 0 ? 1 : -1;
                 const zoom = Math.exp(wheel * zoomIntensity);
-                
                 const rect = canvas.getBoundingClientRect();
                 const mx = e.clientX - rect.left;
                 const my = e.clientY - rect.top;
-
-                panX = mx - (mx - panX) * zoom;
-                panY = my - (my - panY) * zoom;
-                scale *= zoom;
-                render();
+                panX = mx - (mx - panX) * zoom; panY = my - (my - panY) * zoom;
+                scale *= zoom; render();
             });
         }
 
         function setupKeyboardShortcuts() {
             window.addEventListener('keydown', e => {
                 if (e.key === 'Delete' || e.key === 'Backspace') {
-                    if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') {
-                        deleteSelected();
-                    }
+                    if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') deleteSelected();
                 }
             });
         }
 
-        // Local Storage Project Manager
+        function handlePlanUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Si es PDF, usamos PDF.js
+            if (file.type === 'application/pdf') {
+                showToast("Procesando PDF...");
+                const fileReader = new FileReader();
+                fileReader.onload = async function() {
+                    const typedarray = new Uint8Array(this.result);
+                    try {
+                        const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                        const page = await pdf.getPage(1); // Tomamos la pagina 1
+                        
+                        // Renderizar con alta calidad (scale 2.5)
+                        const viewport = page.getViewport({ scale: 2.5 });
+                        const offscreenCanvas = document.createElement('canvas');
+                        const offCtx = offscreenCanvas.getContext('2d');
+                        offscreenCanvas.width = viewport.width;
+                        offscreenCanvas.height = viewport.height;
+
+                        const renderContext = { canvasContext: offCtx, viewport: viewport };
+                        await page.render(renderContext).promise;
+
+                        // Convertir canvas a imagen de fondo
+                        const img = new Image();
+                        img.onload = () => { bgImage = img; render(); showToast("PDF Cargado como Plano"); };
+                        img.src = offscreenCanvas.toDataURL();
+                    } catch (err) {
+                        console.error(err);
+                        showToast("Error al decodificar el PDF.");
+                    }
+                };
+                fileReader.readAsArrayBuffer(file);
+            } 
+            // Si es imagen normal (PNG, JPG, SVG)
+            else if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() { bgImage = img; render(); showToast("Plano cargado."); }
+                    img.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                showToast("Formato de archivo no soportado.");
+            }
+        }
+
         function openProjectManager() {
             const list = document.getElementById('projects-list');
             const projects = JSON.parse(localStorage.getItem('tech_projects') || '{}');
             const keys = Object.keys(projects);
-
-            if (keys.length === 0) {
-                list.innerHTML = '<p style="font-size: 0.85rem; color: var(--text-muted);">No hay proyectos guardados en el navegador.</p>';
-            } else {
+            if (keys.length === 0) { list.innerHTML = '<p style="color: var(--text-muted);">No hay proyectos guardados.</p>'; } 
+            else {
                 list.innerHTML = keys.map(k => `
                     <div class="project-item">
-                        <div>
-                            <strong>${k}</strong>
-                            <div style="font-size:0.75rem; color:var(--text-muted);">Guardado: ${projects[k].date || 'Reciente'}</div>
-                        </div>
-                        <div>
-                            <button class="btn btn-primary" onclick="loadSavedProject('${k}')">Cargar</button>
-                            <button class="btn btn-danger" onclick="deleteSavedProject('${k}')">Borrar</button>
-                        </div>
-                    </div>
-                `).join('');
+                        <div><strong>${k}</strong><div style="font-size:0.75rem; color:var(--text-muted);">${projects[k].date || 'Reciente'}</div></div>
+                        <div><button class="btn btn-primary" onclick="loadSavedProject('${k}')">Cargar</button> <button class="btn btn-danger" onclick="deleteSavedProject('${k}')">Borrar</button></div>
+                    </div>`).join('');
             }
             document.getElementById('modal-projects').style.display = 'flex';
         }
@@ -849,172 +705,81 @@
         function saveCurrentProjectPrompt() {
             const name = prompt("Escribe el nombre para tu proyecto:", "Proyecto " + new Date().toLocaleDateString());
             if (!name) return;
-
             const projects = JSON.parse(localStorage.getItem('tech_projects') || '{}');
-            projects[name] = {
-                date: new Date().toLocaleString(),
-                nodes: nodes,
-                connections: connections,
-                pathways: pathways,
-                bgScaleRatio: bgScaleRatio
-            };
+            projects[name] = { date: new Date().toLocaleString(), nodes, connections, pathways, bgScaleRatio };
             localStorage.setItem('tech_projects', JSON.stringify(projects));
-            showToast("¡Proyecto guardado exitosamente!");
-            openProjectManager();
+            showToast("Proyecto guardado"); openProjectManager();
         }
 
         function loadSavedProject(name) {
             const projects = JSON.parse(localStorage.getItem('tech_projects') || '{}');
             if (projects[name]) {
-                const data = projects[name];
-                nodes = data.nodes || [];
-                connections = data.connections || [];
-                pathways = data.pathways || [];
-                bgScaleRatio = data.bgScaleRatio || 20;
-                deselectAll();
-                updateMetrics();
-                render();
-                closeModal('modal-projects');
-                showToast("Proyecto '" + name + "' cargado");
+                const data = projects[name]; nodes = data.nodes || []; connections = data.connections || []; pathways = data.pathways || []; bgScaleRatio = data.bgScaleRatio || 20;
+                deselectAll(); updateMetrics(); render(); closeModal('modal-projects'); showToast("Cargado: " + name);
             }
         }
-
         function deleteSavedProject(name) {
-            if (confirm("¿Estás seguro de eliminar el proyecto '" + name + "'?")) {
+            if (confirm("¿Eliminar '" + name + "'?")) {
                 const projects = JSON.parse(localStorage.getItem('tech_projects') || '{}');
-                delete projects[name];
-                localStorage.setItem('tech_projects', JSON.stringify(projects));
-                openProjectManager();
-                showToast("Proyecto eliminado");
+                delete projects[name]; localStorage.setItem('tech_projects', JSON.stringify(projects)); openProjectManager();
             }
         }
-
-        // Export & Import
         function exportJSON() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ nodes, connections, pathways, bgScaleRatio }));
-            const dlAnchor = document.createElement('a');
-            dlAnchor.setAttribute("href", dataStr);
-            dlAnchor.setAttribute("download", "TechDiagram_Project.json");
-            dlAnchor.click();
+            const dlAnchor = document.createElement('a'); dlAnchor.setAttribute("href", dataStr); dlAnchor.setAttribute("download", "Proyecto.json"); dlAnchor.click();
         }
-
         function importJSON(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+            const file = e.target.files[0]; if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(evt) {
-                const data = JSON.parse(evt.target.result);
-                nodes = data.nodes || [];
-                connections = data.connections || [];
-                pathways = data.pathways || [];
-                bgScaleRatio = data.bgScaleRatio || 20;
-                render();
-                updateMetrics();
-                showToast("JSON Importado Correctamente");
-            };
+            reader.onload = function(evt) { const data = JSON.parse(evt.target.result); nodes = data.nodes || []; connections = data.connections || []; pathways = data.pathways || []; render(); updateMetrics(); showToast("Importado"); };
             reader.readAsText(file);
         }
 
-        // Plan Upload Handling
-        function handlePlanUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    bgImage = img;
-                    render();
-                    showToast("Plano cargado exitosamente.");
-                }
-                img.src = e.target.result;
-            }
-            reader.readAsDataURL(file);
-        }
-
-        // BOM and Modals
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         
-        function openBomModal() {
-            const tbody = document.getElementById('bom-table-body');
-            let html = '';
-            
-            // Group nodes by name
-            const nodeCounts = {};
-            nodes.forEach(n => {
-                nodeCounts[n.name] = (nodeCounts[n.name] || 0) + 1;
-            });
-
-            for (const [name, count] of Object.entries(nodeCounts)) {
-                html += `<tr><td>Equipo</td><td>${name}</td><td>${count} Unid</td><td>N/A</td></tr>`;
-            }
-
-            const pathM = pathways.reduce((s, p) => s + Math.hypot(p.x2 - p.x1, p.y2 - p.y1), 0) / bgScaleRatio;
-            if(pathM > 0) {
-                const pathWithWaste = (pathM * 1.05).toFixed(1);
-                html += `<tr><td>Canalización</td><td>Tubería / Bandeja Malla</td><td>${pathWithWaste} m</td><td>+5% Merma (TIA-569)</td></tr>`;
-                html += `<tr><td>Accesorios</td><td>Abrazaderas de Soporte</td><td>${Math.ceil(pathWithWaste / 1.5)} Unid</td><td>Cada 1.5m</td></tr>`;
-            }
-            tbody.innerHTML = html;
-            document.getElementById('modal-bom').style.display = 'flex';
-        }
-
-        function exportBomCSV() {
-            let csv = "Categoria,Descripcion,Cantidad_Metros,Norma_Holgura\n";
-            
-            const nodeCounts = {};
-            nodes.forEach(n => { nodeCounts[n.name] = (nodeCounts[n.name] || 0) + 1; });
-            for (const [name, count] of Object.entries(nodeCounts)) {
-                csv += `Equipo,${name},${count} Unid,N/A\n`;
-            }
-
-            const pathM = pathways.reduce((s, p) => s + Math.hypot(p.x2 - p.x1, p.y2 - p.y1), 0) / bgScaleRatio;
-            if(pathM > 0) {
-                const pathWithWaste = (pathM * 1.05).toFixed(1);
-                csv += `Canalización,Tubería / Bandeja Malla,${pathWithWaste} m,+5% Merma (TIA-569)\n`;
-                csv += `Accesorios,Abrazaderas de Soporte,${Math.ceil(pathWithWaste / 1.5)} Unid,Cada 1.5m\n`;
-            }
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", "BOM_Materiales.csv");
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast("BOM Exportado a CSV");
-        }
-
-        function openSolarCalcModal() {
-            document.getElementById('modal-solar').style.display = 'flex';
-            recalcSolarEngine();
-        }
-
+        function openSolarCalcModal() { document.getElementById('modal-solar').style.display = 'flex'; recalcSolarEngine(); }
         function recalcSolarEngine() {
             const n = +document.getElementById('calc-string-n').value;
             const temp = +document.getElementById('calc-temp-min').value;
             const hsp = +document.getElementById('calc-hsp').value;
-
             const vocSTC = 50.2, betaVoc = -0.0026, pmp = 580;
             const vocMax = (vocSTC * n * (1 + betaVoc * (temp - 25))).toFixed(1);
             const kwp = ((n * pmp) / 1000).toFixed(2);
             const kwhDaily = (kwp * hsp * 0.82).toFixed(1);
+            document.getElementById('solar-calc-results').innerHTML = `<p><strong>V_oc_max a ${temp}°C:</strong> <span style="color:var(--accent);">${vocMax} V DC</span></p><p><strong>Potencia Pico:</strong> ${kwp} kWp</p><p><strong>Generación Diaria:</strong> <span style="color:var(--success);">${kwhDaily} kWh</span></p>`;
+        }
 
-            document.getElementById('solar-calc-results').innerHTML = `
-                <p><strong>Tensión Máx. Circuito Abierto ($V_{oc\_max}$ a ${temp}°C):</strong> <span style="color:var(--accent);">${vocMax} V DC</span></p>
-                <p><strong>Potencia Pico Instalada String:</strong> ${kwp} kWp</p>
-                <p><strong>Generación Estimada Diaria:</strong> <span style="color:var(--success);">${kwhDaily} kWh/día</span></p>
-            `;
+        function openBomModal() {
+            const tbody = document.getElementById('bom-table-body'); let html = '';
+            const nodeCounts = {}; nodes.forEach(n => { nodeCounts[n.name] = (nodeCounts[n.name] || 0) + 1; });
+            for (const [name, count] of Object.entries(nodeCounts)) html += `<tr><td>Equipo</td><td>${name}</td><td>${count} Unid</td><td>N/A</td></tr>`;
+            const pathM = pathways.reduce((s, p) => s + Math.hypot(p.x2 - p.x1, p.y2 - p.y1), 0) / bgScaleRatio;
+            if(pathM > 0) {
+                const pathWithWaste = (pathM * 1.05).toFixed(1);
+                html += `<tr><td>Canalización</td><td>Tubería EMT / Malla</td><td>${pathWithWaste} m</td><td>+5% Merma</td></tr>`;
+                html += `<tr><td>Accesorios</td><td>Soportes/Abrazaderas</td><td>${Math.ceil(pathWithWaste / 1.5)} Unid</td><td>Cada 1.5m</td></tr>`;
+            }
+            tbody.innerHTML = html; document.getElementById('modal-bom').style.display = 'flex';
+        }
+
+        function exportBomCSV() {
+            let csv = "Categoria,Descripcion,Cantidad,Observacion\n";
+            const nodeCounts = {}; nodes.forEach(n => { nodeCounts[n.name] = (nodeCounts[n.name] || 0) + 1; });
+            for (const [name, count] of Object.entries(nodeCounts)) csv += `Equipo,${name},${count} Unid,N/A\n`;
+            const pathM = pathways.reduce((s, p) => s + Math.hypot(p.x2 - p.x1, p.y2 - p.y1), 0) / bgScaleRatio;
+            if(pathM > 0) {
+                const pathWithWaste = (pathM * 1.05).toFixed(1);
+                csv += `Canalización,Tubería EMT / Malla,${pathWithWaste} m,+5% Merma\n`;
+                csv += `Accesorios,Soportes,${Math.ceil(pathWithWaste / 1.5)} Unid,Cada 1.5m\n`;
+            }
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a"); link.setAttribute("href", URL.createObjectURL(blob)); link.setAttribute("download", "BOM.csv");
+            document.body.appendChild(link); link.click(); document.body.removeChild(link); showToast("CSV Exportado");
         }
 
         function filterComponents() {
             const term = document.getElementById('search-comp').value.toLowerCase();
-            document.querySelectorAll('.comp-item').forEach(item => {
-                item.style.display = item.innerText.toLowerCase().includes(term) ? 'block' : 'none';
-            });
+            document.querySelectorAll('.comp-item').forEach(item => { item.style.display = item.innerText.toLowerCase().includes(term) ? 'block' : 'none'; });
         }
     </script>
 </body>
