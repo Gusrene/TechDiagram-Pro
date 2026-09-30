@@ -205,6 +205,11 @@
         <span>💾 Guardar</span>
       </button>
 
+      <!-- Botón Manual de Usuario -->
+      <button onclick="openUserManualModal()" class="px-2.5 py-1.5 text-xs font-bold bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-600/30 rounded-lg flex items-center gap-1.5 transition" title="Ver Guía de Uso Rápido">
+        <span>📖</span> Manual de Uso
+      </button>
+
       <!-- Selector de Plantilla -->
       <div class="relative">
         <button onclick="toggleDropdown('templatesDropdown')" class="px-2.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg flex items-center gap-1.5 transition">
@@ -901,6 +906,82 @@
       <div class="flex justify-end gap-2">
         <button onclick="cancelScaleCalibration()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs">Cancelar</button>
         <button onclick="applyScaleCalibration()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-semibold">Aplicar Escala</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: MANUAL DE USUARIO / GUÍA DE USO -->
+  <div id="userManualModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+        <div class="flex items-center gap-2.5">
+          <div class="p-2 rounded-lg bg-indigo-500/20 text-indigo-400 text-lg">📖</div>
+          <div>
+            <h3 class="font-bold text-slate-100 text-sm">Manual de Usuario & Guía de Inicio Rápido</h3>
+            <p class="text-xs text-slate-400">Cómo diseñar y cuantificar tus proyectos con TechDiagram Pro</p>
+          </div>
+        </div>
+        <button onclick="closeUserManualModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto space-y-6 text-xs text-slate-300">
+        
+        <div class="space-y-2">
+          <h4 class="text-sm font-bold text-slate-100 flex items-center gap-2"><span class="text-indigo-400">1.</span> Herramientas Básicas y Lienzo</h4>
+          <p>La barra central superior controla tu interacción con el plano:</p>
+          <ul class="list-disc pl-5 space-y-1 text-slate-400">
+            <li><strong>Mover (Tecla V):</strong> Selecciona esta herramienta para arrastrar equipos, ver sus propiedades en el inspector lateral o desplazarte por el lienzo (clic sostenido en el fondo).</li>
+            <li><strong>Cablear (Tecla C):</strong> Conecta equipos eléctricamente o por red. Haz clic en el equipo origen, luego en el destino. Usa el selector "Medio" para elegir si es Cat6, Solar DC, Fibra, etc.</li>
+            <li><strong>Canalización (Tecla P):</strong> Dibuja tuberías (EMT, PVC) o escalerillas entre cajas de paso o equipos. Se trazan en escuadra (ortogonal) automáticamente.</li>
+            <li><strong>Eliminar:</strong> Selecciona cualquier nodo, cable o tubería y presiona la tecla <kbd class="bg-slate-800 px-1 rounded">Supr</kbd> o <kbd class="bg-slate-800 px-1 rounded">Delete</kbd>.</li>
+          </ul>
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="text-sm font-bold text-slate-100 flex items-center gap-2"><span class="text-amber-400">2.</span> Trabajo con Planos de Fondo y Calibración</h4>
+          <p>Puedes diseñar sobre la nada, o subir el plano arquitectónico del sitio:</p>
+          <ul class="list-disc pl-5 space-y-1 text-slate-400">
+            <li>Usa el botón <strong>"📐 Subir Plano"</strong> (acepta PDF, PNG, JPG). Si subes un PDF, la primera página se convertirá en el fondo.</li>
+            <li><strong>Calibrar Escala (Importante):</strong> Haz clic en <strong>"📏"</strong>, luego haz clic en dos extremos de una pared o puerta en tu plano cuya medida conozcas. Ingresa la medida real en metros. Esto permite que el sistema calcule los <strong>metros reales de tubería y cable</strong>.</li>
+          </ul>
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="text-sm font-bold text-slate-100 flex items-center gap-2"><span class="text-emerald-400">3.</span> Paneles de Propiedades y Cálculo Solar</h4>
+          <p>Configura las tripas de tu diseño:</p>
+          <ul class="list-disc pl-5 space-y-1 text-slate-400">
+            <li><strong>Inspector Derecho:</strong> Haz clic en cualquier equipo (ej. una cámara) para cambiar su IP, nombre, o consumo PoE. Haz clic en un cable para ver su longitud calculada (+10% de holgura).</li>
+            <li><strong>⚡ Cálculo Solar:</strong> Haz clic en este botón de la barra superior para abrir el asistente NEC 690. Ajusta la temperatura mínima y los módulos por string para validar que no superes los 1000V/1500V DC y saber qué calibre de cable usar ($1.56 \times I_{sc}$).</li>
+          </ul>
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="text-sm font-bold text-slate-100 flex items-center gap-2"><span class="text-sky-400">4.</span> Generación de Cómputos (BOM) y Exportación</h4>
+          <p>Automatiza el trabajo pesado de presupuestación:</p>
+          <ul class="list-disc pl-5 space-y-1 text-slate-400">
+            <li>Haz clic en <strong>"📋 Listado Materiales (BOM)"</strong>. Verás una tabla cuantificando todos los equipos agrupados, los metros de cable exactos con holgura, y el conteo de <strong>tuberías de 3m, coples y abrazaderas</strong> requeridos por norma TIA-569.</li>
+            <li>Desde ese modal, puedes exportarlo todo a <strong>Excel (CSV)</strong>.</li>
+            <li>El botón <strong>"Exportar / Guardar"</strong> te permite bajar el proyecto completo como un archivo JSON, o exportar una imagen vectorial (SVG) del diagrama para tus reportes.</li>
+          </ul>
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="text-sm font-bold text-slate-100 flex items-center gap-2"><span class="text-purple-400">5.</span> Guardado en el Navegador</h4>
+          <p>No pierdas tu trabajo si cierras la pestaña accidentalmente:</p>
+          <ul class="list-disc pl-5 space-y-1 text-slate-400">
+            <li>Haz clic en <strong>"💾 Guardar"</strong> para almacenar el proyecto actual en la memoria de tu navegador (LocalStorage).</li>
+            <li>Usa <strong>"📁 Mis Proyectos"</strong> para ver la lista de proyectos guardados, cargarlos de inmediato o eliminarlos.</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="p-3 border-t border-slate-800 bg-slate-950 flex justify-end">
+        <button onclick="closeUserManualModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition">
+          ¡Entendido, a diseñar!
+        </button>
       </div>
     </div>
   </div>
@@ -2911,10 +2992,26 @@
       showToast('Diagrama exportado en SVG', '📐');
     }
 
+    // --- MANUAL DE USUARIO ---
+    function openUserManualModal() {
+      document.getElementById('userManualModal').classList.remove('hidden');
+    }
+
+    function closeUserManualModal() {
+      document.getElementById('userManualModal').classList.add('hidden');
+    }
+
     // --- INICIALIZACIÓN ---
     window.onload = function() {
-      loadTemplate('pv_commercial');
+      // Iniciar con un lienzo en blanco en lugar de cargar una plantilla
+      clearCanvas();
       updateCanvasTransform();
+      
+      // Mostrar el manual de usuario automáticamente la primera vez que se carga la página (opcional)
+      if (!localStorage.getItem('techdiagram_manual_seen')) {
+        openUserManualModal();
+        localStorage.setItem('techdiagram_manual_seen', 'true');
+      }
     };
   </script>
 </body>
