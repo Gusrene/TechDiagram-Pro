@@ -1739,9 +1739,15 @@
         const isSelected = APP_STATE.selectedPathwayId === p.id;
 
         let pathData = '';
-        if (p.routing === 'orthogonal') {
+        const r = p.routing || 'orthogonal_mid';
+        
+        if (r === 'orthogonal_mid' || r === 'orthogonal') {
           const midX = (x1 + x2) / 2;
           pathData = `M ${x1} ${y1} L ${midX} ${y1} L ${midX} ${y2} L ${x2} ${y2}`;
+        } else if (r === 'orthogonal_xy') {
+          pathData = `M ${x1} ${y1} L ${x2} ${y1} L ${x2} ${y2}`;
+        } else if (r === 'orthogonal_yx') {
+          pathData = `M ${x1} ${y1} L ${x1} ${y2} L ${x2} ${y2}`;
         } else {
           pathData = `M ${x1} ${y1} L ${x2} ${y2}`;
         }
@@ -1807,9 +1813,12 @@
       const y2 = tgt.y + 40;
 
       let pixelDist = 0;
-      if (pathway.routing === 'orthogonal') {
+      const r = pathway.routing || 'orthogonal_mid';
+      if (r === 'orthogonal_mid' || r === 'orthogonal') {
         const midX = (x1 + x2) / 2;
         pixelDist = Math.abs(midX - x1) + Math.abs(y2 - y1) + Math.abs(x2 - midX);
+      } else if (r === 'orthogonal_xy' || r === 'orthogonal_yx') {
+        pixelDist = Math.abs(x2 - x1) + Math.abs(y2 - y1);
       } else {
         pixelDist = Math.hypot(x2 - x1, y2 - y1);
       }
@@ -1836,13 +1845,23 @@
         const cfg = CABLE_CONFIGS[conn.type] || CABLE_CONFIGS.poe;
         const isSelected = APP_STATE.selectedConnId === conn.id;
 
-        const dx = x2 - x1;
-        const dy = y2 - y1;
-        const cx1 = x1 + dx * 0.25;
-        const cy1 = y1;
-        const cx2 = x1 + dx * 0.75;
-        const cy2 = y2;
-        const d = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
+        const r = conn.routing || 'curve';
+        let d = '';
+        if (r === 'curve') {
+          const dx = x2 - x1;
+          const cx1 = x1 + dx * 0.25;
+          const cx2 = x1 + dx * 0.75;
+          d = `M ${x1} ${y1} C ${cx1} ${y1}, ${cx2} ${y2}, ${x2} ${y2}`;
+        } else if (r === 'direct') {
+          d = `M ${x1} ${y1} L ${x2} ${y2}`;
+        } else if (r === 'orthogonal_mid') {
+          const midX = (x1 + x2) / 2;
+          d = `M ${x1} ${y1} L ${midX} ${y1} L ${midX} ${y2} L ${x2} ${y2}`;
+        } else if (r === 'orthogonal_xy') {
+          d = `M ${x1} ${y1} L ${x2} ${y1} L ${x2} ${y2}`;
+        } else if (r === 'orthogonal_yx') {
+          d = `M ${x1} ${y1} L ${x1} ${y2} L ${x2} ${y2}`;
+        }
 
         const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         g.setAttribute('class', 'pointer-events-auto cursor-pointer');
@@ -1885,8 +1904,13 @@
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('class', 'select-none pointer-events-none font-semibold');
         
-        const distM = Math.hypot(x2 - x1, y2 - y1) * APP_STATE.scaleMetersPerPixel;
-        conn.lengthMeters = Math.max(1, Math.round(distM * 10) / 10);
+        let pixelDist = 0;
+        if (r === 'curve' || r === 'direct') {
+           pixelDist = Math.hypot(x2 - x1, y2 - y1);
+        } else {
+           pixelDist = Math.abs(x2 - x1) + Math.abs(y2 - y1);
+        }
+        conn.lengthMeters = Math.max(1, Math.round((pixelDist * APP_STATE.scaleMetersPerPixel) * 10) / 10);
         text.textContent = `${conn.label || cfg.name.split(' ')[0]} (${conn.lengthMeters}m)`;
 
         g.appendChild(bg);
@@ -2098,6 +2122,17 @@
           </div>
 
           <div>
+            <label class="block text-[11px] font-medium text-slate-400 mb-1">Trazado / Ruteo del Cable</label>
+            <select onchange="updateConnProperty('${conn.id}', 'routing', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
+              <option value="curve" ${!conn.routing || conn.routing === 'curve' ? 'selected' : ''}>Curva Flexible</option>
+              <option value="orthogonal_mid" ${conn.routing === 'orthogonal_mid' ? 'selected' : ''}>Ortogonal en Z (Centro)</option>
+              <option value="orthogonal_xy" ${conn.routing === 'orthogonal_xy' ? 'selected' : ''}>Ortogonal en L (Horiz ➔ Vert)</option>
+              <option value="orthogonal_yx" ${conn.routing === 'orthogonal_yx' ? 'selected' : ''}>Ortogonal en L (Vert ➔ Horiz)</option>
+              <option value="direct" ${conn.routing === 'direct' ? 'selected' : ''}>Directo (Línea Recta)</option>
+            </select>
+          </div>
+
+          <div>
             <label class="block text-[11px] font-medium text-slate-400 mb-1">Etiqueta de Identificación</label>
             <input type="text" value="${conn.label || ''}" placeholder="Ej: STR-01-DC" oninput="updateConnProperty('${conn.id}', 'label', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 font-mono">
           </div>
@@ -2152,9 +2187,11 @@
           </div>
 
           <div>
-            <label class="block text-[11px] font-medium text-slate-400 mb-1">Trazado / Ruteo</label>
+            <label class="block text-[11px] font-medium text-slate-400 mb-1">Trazado / Ruteo en Planta</label>
             <select onchange="updatePathwayProperty('${p.id}', 'routing', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
-              <option value="orthogonal" ${p.routing === 'orthogonal' ? 'selected' : ''}>Ortogonal (Escuadra 90°)</option>
+              <option value="orthogonal_mid" ${p.routing === 'orthogonal_mid' || p.routing === 'orthogonal' ? 'selected' : ''}>Ortogonal en Z (Centro)</option>
+              <option value="orthogonal_xy" ${p.routing === 'orthogonal_xy' ? 'selected' : ''}>Ortogonal en L (Horiz ➔ Vert)</option>
+              <option value="orthogonal_yx" ${p.routing === 'orthogonal_yx' ? 'selected' : ''}>Ortogonal en L (Vert ➔ Horiz)</option>
               <option value="direct" ${p.routing === 'direct' ? 'selected' : ''}>Directo (Línea Recta)</option>
             </select>
           </div>
@@ -2372,6 +2409,7 @@
             sourceId: APP_STATE.connectingSourceNodeId,
             targetId: nodeId,
             type: cableType,
+            routing: 'curve',
             label: CABLE_CONFIGS[cableType]?.name.split(' ')[0] || 'Enlace',
             lengthMeters: 5
           };
@@ -2402,7 +2440,7 @@
             sourceId: APP_STATE.pathwaySourceNodeId,
             targetId: nodeId,
             type: pathwayType,
-            routing: 'orthogonal',
+            routing: 'orthogonal_mid',
             label: CABLE_CONFIGS[pathwayType]?.name.split(' ')[0] || 'Conduit',
             bendsCount: 1
           };
