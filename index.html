@@ -66,7 +66,6 @@
 
   <!-- HEADER & TOOLBAR PRINCIPAL -->
   <header class="h-14 border-b border-slate-800 bg-slate-950 flex items-center justify-between px-3 shrink-0 z-20">
-    <!-- Izquierda: Toggle, Logo y Proyecto -->
     <div class="flex items-center gap-3">
       <button onclick="toggleSidebar('leftSidebar')" class="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition" title="Ocultar/Mostrar Librería">
         <i data-lucide="panel-left" class="w-5 h-5"></i>
@@ -84,7 +83,7 @@
       <!-- Nombre del Proyecto Editable -->
       <div class="flex flex-col">
         <input type="text" id="projectName" value="Proyecto de Ingeniería 01" class="edit-in-place text-sm font-semibold text-slate-100 px-1 w-64 truncate" onchange="updateProjectName()">
-        <span class="text-[10px] text-slate-400 px-1">TechDiagram Pro • Diagramación Unifilar</span>
+        <span class="text-[10px] text-slate-400 px-1">TechDiagram Pro • Diagramación y Metrados</span>
       </div>
     </div>
 
@@ -138,7 +137,7 @@
 
       <label class="p-1.5 px-2 rounded-lg text-xs font-medium flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer transition" title="Subir plano en PDF, PNG o JPG">
         <i data-lucide="map" class="w-4 h-4"></i> Plano
-        <input type="file" accept="image/*,.pdf" class="hidden" onchange="handlePlanUpload(event)">
+        <input type="file" accept="image/*,.pdf" class="hidden" id="planUploadInput" onchange="handlePlanUpload(event)">
       </label>
 
       <button onclick="startScaleCalibration()" class="p-1.5 px-2 rounded-lg text-xs font-medium text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition flex items-center gap-1.5" title="Calibrar Escala">
@@ -149,6 +148,10 @@
 
     <!-- Derecha: Acciones, BOM y Proyectos -->
     <div class="flex items-center gap-2">
+      <button onclick="openNotesModal()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/40 hover:bg-sky-500/30 flex items-center gap-1.5 transition">
+        <i data-lucide="file-edit" class="w-4 h-4"></i> Notas
+      </button>
+      
       <button onclick="openPvCalculatorModal()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 flex items-center gap-1.5 transition">
         <i data-lucide="sun" class="w-4 h-4"></i> Solar NEC
       </button>
@@ -218,9 +221,9 @@
       <!-- Controles flotantes Canvas -->
       <div class="absolute bottom-4 left-4 flex flex-col gap-2 z-10">
         <div class="bg-slate-950/80 backdrop-blur border border-slate-800 rounded-lg p-1.5 text-xs flex gap-1 shadow-xl">
-          <button onclick="zoomCanvas(0.1)" class="p-1 hover:bg-slate-800 rounded text-slate-400"><i data-lucide="zoom-in" class="w-4 h-4"></i></button>
+          <button onclick="manualZoomCanvas(0.1)" class="p-1 hover:bg-slate-800 rounded text-slate-400"><i data-lucide="zoom-in" class="w-4 h-4"></i></button>
           <span id="zoomText" class="w-12 text-center font-mono flex items-center justify-center text-slate-300">100%</span>
-          <button onclick="zoomCanvas(-0.1)" class="p-1 hover:bg-slate-800 rounded text-slate-400"><i data-lucide="zoom-out" class="w-4 h-4"></i></button>
+          <button onclick="manualZoomCanvas(-0.1)" class="p-1 hover:bg-slate-800 rounded text-slate-400"><i data-lucide="zoom-out" class="w-4 h-4"></i></button>
           <button onclick="resetZoom()" class="p-1 hover:bg-slate-800 rounded text-slate-400 font-mono text-[10px]">1:1</button>
         </div>
         <div id="modeStatusBox" class="bg-slate-950/80 backdrop-blur border border-slate-800 rounded-lg px-3 py-2 text-xs text-indigo-400 font-medium flex items-center gap-2 shadow-xl">
@@ -282,6 +285,23 @@
   </div>
 
   <!-- ================= MODALES ================= -->
+
+  <!-- MODAL: NOTAS Y DETALLES DEL PROYECTO -->
+  <div id="modalNotes" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col h-[80vh]">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950 rounded-t-2xl">
+        <h3 class="font-bold text-slate-100 flex items-center gap-2"><i data-lucide="file-edit" class="text-sky-400"></i> Memoria Descriptiva y Notas</h3>
+        <button onclick="closeModal('modalNotes')" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
+      </div>
+      <div class="p-4 flex-1 flex flex-col">
+        <p class="text-xs text-slate-400 mb-2">Escribe las especificaciones técnicas, instrucciones de instalación o consideraciones especiales del diseño. Esta información se adjuntará al final del PDF exportado.</p>
+        <textarea id="projectNotesTextarea" class="w-full flex-1 bg-slate-950 border border-slate-700 rounded-lg p-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono resize-none" placeholder="1. Especificaciones de puesta a tierra...&#10;2. Configuración de VLANs...&#10;3. Detalles de montaje..."></textarea>
+      </div>
+      <div class="p-4 border-t border-slate-800 bg-slate-950 flex justify-end gap-2 rounded-b-2xl">
+        <button onclick="saveNotes()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition">Guardar Notas</button>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL: BOM, UNIFILAR Y EXPORTACIÓN PDF/CSV -->
   <div id="modalBOM" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
@@ -423,13 +443,15 @@
   <!-- ================= LÓGICA JAVASCRIPT ================= -->
   <script>
     const STATE = {
-      projectConfig: { name: "Proyecto Diagramación", logoDataUrl: null },
+      projectConfig: { name: "Proyecto de Ingeniería 01", logoDataUrl: null },
+      projectNotes: "",
       nodes: [], connections: [], pathways: [],
       mode: 'select', scaleMetersPerPx: 0.05,
       zoom: 1, panX: 40, panY: 40,
       selNodeId: null, selConnId: null, selPathId: null,
       routeSourceId: null, routeWaypoints: [], isRouting: false,
-      calibPoints: [], bgImage: null, bgOpacity: 0.4
+      calibPoints: [], bgImage: null, bgOpacity: 0.4,
+      isPanning: false, dragNode: null, dragWp: null
     };
 
     const LIB_DEFS = {
@@ -484,7 +506,7 @@
       pv_ground: { color: '#84cc16', w: 3, dash: '4,4', label: 'Tierra Solar' },
       ac_power: { color: '#f97316', w: 3.5, dash: 'none', label: 'Potencia AC' },
       
-      // Canalizaciones (Nuevas Medidas)
+      // Canalizaciones
       conduit_emt_12: { color: '#67e8f9', w: 5, dash: 'none', label: 'EMT 1/2"', isPathway: true },
       conduit_emt_34: { color: '#22d3ee', w: 6, dash: 'none', label: 'EMT 3/4"', isPathway: true },
       conduit_emt_1: { color: '#06b6d4', w: 8, dash: 'none', label: 'EMT 1"', isPathway: true },
@@ -520,6 +542,10 @@
               document.getElementById('projectLogoIcon').classList.add('hidden');
             }
           }
+          if(data.projectNotes) {
+             STATE.projectNotes = data.projectNotes;
+             document.getElementById('projectNotesTextarea').value = STATE.projectNotes;
+          }
           if(data.bgImage) {
             STATE.bgImage = data.bgImage;
             const imgEl = document.getElementById('floorPlanImg');
@@ -536,9 +562,12 @@
 
       // Teclado
       window.addEventListener('keydown', e => {
-        if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
+        if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA') return;
         if(e.key==='Delete'||e.key==='Backspace') deleteSelected();
-        if(e.key==='Escape') setMode('select');
+        if(e.key==='Escape') {
+          if (STATE.isRouting) cancelRouting();
+          else setMode('select');
+        }
         if(e.key==='v'||e.key==='V') setMode('select');
         if(e.key==='c'||e.key==='C') setMode('connect');
         if(e.key==='p'||e.key==='P') setMode('pathway');
@@ -549,7 +578,7 @@
       STATE.projectConfig.name = document.getElementById('projectName').value;
       localStorage.setItem('techdiag_last', JSON.stringify({
         nodes: STATE.nodes, connections: STATE.connections, pathways: STATE.pathways, 
-        projectConfig: STATE.projectConfig, bgImage: STATE.bgImage, scaleMetersPerPx: STATE.scaleMetersPerPx
+        projectConfig: STATE.projectConfig, projectNotes: STATE.projectNotes, bgImage: STATE.bgImage, scaleMetersPerPx: STATE.scaleMetersPerPx
       }));
     }
 
@@ -622,10 +651,20 @@
       
       const st = document.getElementById('modeStatusBox');
       if(mode==='select') st.innerHTML = '<span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> <span>Modo: Mover y Seleccionar</span>';
-      if(mode==='connect') st.innerHTML = '<span class="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span> <span>Modo: Cablear (Clic org, clics en pasillos, clic dest)</span>';
-      if(mode==='pathway') st.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span>Modo: Canalización Libre</span>';
+      if(mode==='connect') st.innerHTML = '<span class="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span> <span>Modo: Cablear (Clic org, clics vacíos, clic dest)</span>';
+      if(mode==='pathway') st.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span>Modo: Canalización Libre (Doble clic para terminar libre)</span>';
       
       cancelRouting();
+    }
+
+    function createAnchorNode(x, y) {
+      const anchor = {
+        id: 'anchor_' + Date.now(), type: 'anchor',
+        name: 'Punto de Ruta',
+        x: x, y: y, props: {}, customProps: {}
+      };
+      STATE.nodes.push(anchor);
+      return anchor;
     }
 
     function addNode(typeKey) {
@@ -635,7 +674,7 @@
         name: `${def.label} ${STATE.nodes.filter(n=>n.type===typeKey).length + 1}`,
         x: (canvasContainer.clientWidth / 2 - STATE.panX) / STATE.zoom,
         y: (canvasContainer.clientHeight / 2 - STATE.panY) / STATE.zoom,
-        props: JSON.parse(JSON.stringify(def.props)), // Deep copy properties
+        props: JSON.parse(JSON.stringify(def.props)), 
         customProps: {}
       };
       STATE.nodes.push(node);
@@ -649,20 +688,29 @@
       const layer = document.getElementById('nodesLayer');
       layer.innerHTML = '';
       STATE.nodes.forEach(n => {
+        if(n.type === 'anchor') {
+           // Si es anclaje, dibujar un pequeño círculo (o nada)
+           if (STATE.mode === 'connect' || STATE.mode === 'pathway') {
+              const dot = document.createElement('div');
+              dot.className = `absolute transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-indigo-400 opacity-50`;
+              dot.style.left = `${n.x}px`; dot.style.top = `${n.y}px`;
+              layer.appendChild(dot);
+           }
+           return;
+        }
+
         const def = LIB_DEFS[n.type];
         const isSel = STATE.selNodeId === n.id;
         const isRouting = STATE.routeSourceId === n.id;
         
         const card = document.createElement('div');
         card.id = `html_${n.id}`;
-        // Nodo minimalista
         card.className = `absolute transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center border-2 cursor-pointer shadow-lg group ${isSel ? 'border-indigo-400 bg-indigo-900/50 shadow-indigo-500/30 ring-4 ring-indigo-500/20' : 'border-slate-700 bg-slate-900/80 hover:border-slate-500'} ${isRouting ? 'ring-2 ring-sky-400 animate-pulse' : ''}`;
         card.style.left = `${n.x}px`; card.style.top = `${n.y}px`;
         card.style.borderColor = isSel ? '#818cf8' : def.color;
         
         card.innerHTML = `<i data-lucide="${def.icon}" class="w-4 h-4 text-white pointer-events-none"></i>`;
         
-        // Tooltip flotante con datos
         card.innerHTML += `
           <div class="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 p-2 rounded-lg shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 flex flex-col items-center whitespace-nowrap min-w-[120px]">
             <span class="text-xs font-bold text-slate-100">${n.name}</span>
@@ -758,12 +806,16 @@
         if(!STATE.isRouting) {
           STATE.isRouting = true; STATE.routeSourceId = node.id; STATE.routeWaypoints = []; renderCanvasNodes();
         } else if (STATE.routeSourceId !== node.id) {
-          const t = document.getElementById('cableTypeSelect').value;
-          const newRoute = { id: 'r_'+Date.now(), from: STATE.routeSourceId, to: node.id, type: t, waypoints: [...STATE.routeWaypoints] };
-          if(LINE_STYLES[t].isPathway) STATE.pathways.push(newRoute); else STATE.connections.push(newRoute);
-          cancelRouting(); updateAll();
+          finishRouting(node.id);
         }
       }
+    }
+
+    function finishRouting(targetId) {
+      const t = document.getElementById('cableTypeSelect').value;
+      const newRoute = { id: 'r_'+Date.now(), from: STATE.routeSourceId, to: targetId, type: t, waypoints: [...STATE.routeWaypoints] };
+      if(LINE_STYLES[t].isPathway) STATE.pathways.push(newRoute); else STATE.connections.push(newRoute);
+      cancelRouting(); updateAll();
     }
 
     canvasContainer.addEventListener('mousedown', e => {
@@ -785,12 +837,56 @@
           return;
         }
 
-        if(STATE.isRouting) {
-          STATE.routeWaypoints.push(pt); updateTempLine(pt); return;
+        if(STATE.mode === 'connect' || STATE.mode === 'pathway') {
+          if (!STATE.isRouting) {
+             // Iniciar ruteo libre creando un ancla
+             const anchor = createAnchorNode(pt.x, pt.y);
+             STATE.isRouting = true; STATE.routeSourceId = anchor.id; STATE.routeWaypoints = []; renderCanvasNodes();
+             return;
+          } else {
+             // Añadir punto intermedio
+             STATE.routeWaypoints.push(pt); updateTempLine(pt); return;
+          }
         }
+        
         deselectAll(); STATE.isPanning = true; STATE.panStartX = e.clientX - STATE.panX; STATE.panStartY = e.clientY - STATE.panY;
       }
     });
+
+    // Clic derecho o doble clic para terminar trazado libre
+    canvasContainer.addEventListener('contextmenu', e => {
+       e.preventDefault();
+       if (STATE.isRouting) {
+          const pt = getCanvasPt(e);
+          const anchor = createAnchorNode(pt.x, pt.y);
+          finishRouting(anchor.id);
+       }
+    });
+
+    canvasContainer.addEventListener('dblclick', e => {
+       if (STATE.isRouting) {
+          const pt = getCanvasPt(e);
+          const anchor = createAnchorNode(pt.x, pt.y);
+          finishRouting(anchor.id);
+       }
+    });
+
+    // Mouse wheel para zoom inteligente
+    canvasContainer.addEventListener('wheel', e => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+      const newZoom = Math.max(0.2, Math.min(4, STATE.zoom * zoomFactor));
+
+      const rect = canvasContainer.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      STATE.panX = mouseX - (mouseX - STATE.panX) * (newZoom / STATE.zoom);
+      STATE.panY = mouseY - (mouseY - STATE.panY) * (newZoom / STATE.zoom);
+      STATE.zoom = newZoom;
+
+      updateTransform();
+    }, { passive: false });
 
     window.addEventListener('mousemove', e => {
       const pt = getCanvasPt(e);
@@ -832,7 +928,7 @@
 
     function selectNode(nodeOrId) {
       const n = typeof nodeOrId === 'string' ? STATE.nodes.find(x => x.id === nodeOrId) : nodeOrId;
-      if(!n) return;
+      if(!n || n.type === 'anchor') return;
       STATE.selNodeId = n.id; STATE.selConnId = null; STATE.selPathId = null;
       document.getElementById('btnDelete').classList.remove('hidden');
       document.getElementById('btnDuplicate').classList.remove('hidden');
@@ -845,7 +941,7 @@
       
       let propsHtml = '';
       for(let k in n.props) {
-        if(['brand','model','ports'].includes(k)) continue; // Handled separately
+        if(['brand','model','ports'].includes(k)) continue; 
         propsHtml += `
           <div><label class="block text-[10px] text-slate-400 mb-1 capitalize">${k}</label>
           <input type="${typeof n.props[k]==='number'?'number':'text'}" value="${n.props[k]}" onchange="n.props['${k}'] = this.type==='number'?parseFloat(this.value):this.value; updateAll()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-xs text-slate-200 font-mono"></div>
@@ -976,7 +1072,7 @@
       updateAll(); showToast('Duplicado');
     }
 
-    function zoomCanvas(d) { STATE.zoom = Math.max(0.2, Math.min(4, Math.round((STATE.zoom + d)*10)/10)); updateTransform(); }
+    function manualZoomCanvas(d) { STATE.zoom = Math.max(0.2, Math.min(4, Math.round((STATE.zoom + d)*10)/10)); updateTransform(); }
     function resetZoom() { STATE.zoom = 1; STATE.panX = 40; STATE.panY = 40; updateTransform(); }
     function updateTransform() {
       document.getElementById('canvasViewport').style.transform = `translate(${STATE.panX}px, ${STATE.panY}px) scale(${STATE.zoom})`;
@@ -1039,11 +1135,22 @@
     
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
+    function openNotesModal() {
+      document.getElementById('projectNotesTextarea').value = STATE.projectNotes || '';
+      document.getElementById('modalNotes').classList.remove('hidden');
+    }
+    function saveNotes() {
+      STATE.projectNotes = document.getElementById('projectNotesTextarea').value;
+      saveState();
+      closeModal('modalNotes');
+      showToast('Notas guardadas');
+    }
+
     function generateUnifilarHTML() {
       const adj = {}; const inDegree = {};
-      STATE.nodes.forEach(n => { adj[n.id] = []; inDegree[n.id] = 0; });
+      const validNodes = STATE.nodes.filter(n => n.type !== 'anchor');
+      validNodes.forEach(n => { adj[n.id] = []; inDegree[n.id] = 0; });
       
-      // Construir grafo dirigido
       STATE.connections.forEach(c => {
          if(adj[c.from] && inDegree[c.to] !== undefined) {
              adj[c.from].push({to: c.to, type: c.type});
@@ -1051,14 +1158,13 @@
          }
       });
 
-      // Encontrar raíces (equipos sin entradas, ej: Core Switch, Inversor Principal)
-      const roots = STATE.nodes.filter(n => inDegree[n.id] === 0);
-      if(roots.length === 0 && STATE.nodes.length > 0) roots.push(STATE.nodes[0]); // Fallback circular
+      const roots = validNodes.filter(n => inDegree[n.id] === 0);
+      if(roots.length === 0 && validNodes.length > 0) roots.push(validNodes[0]); 
 
       let html = '<ul class="list-none space-y-2">';
 
       function traverse(nodeId, depth) {
-         const n = STATE.nodes.find(x => x.id === nodeId);
+         const n = validNodes.find(x => x.id === nodeId);
          if(!n) return '';
          const def = LIB_DEFS[n.type];
          
@@ -1110,9 +1216,11 @@
       document.getElementById('modalBOM').classList.remove('hidden');
       switchBomTab('tables');
       
+      const validNodes = STATE.nodes.filter(n => n.type !== 'anchor');
+      
       const tNodes = document.getElementById('bomTableNodes');
       const grouped = {};
-      STATE.nodes.forEach(n => {
+      validNodes.forEach(n => {
         const key = `${n.type}-${n.props.model}`;
         if(!grouped[key]) grouped[key] = {c:0, cat:LIB_DEFS[n.type].cat, b:n.props.brand, m:n.props.model, lbl:LIB_DEFS[n.type].label, spc: (n.props.ports||'')+' '+(n.props.voltage||'') };
         grouped[key].c++;
@@ -1120,7 +1228,7 @@
       tNodes.innerHTML = Object.values(grouped).map(g => `<tr class="hover:bg-slate-800">
         <td class="p-2 font-mono text-emerald-400 font-bold">${g.c}</td><td class="p-2">${g.cat}</td><td class="p-2 text-sky-300 font-medium">${g.b||''} ${g.m||''}</td><td class="p-2">${g.lbl}</td><td class="p-2 text-slate-400 font-mono text-[10px]">${g.spc}</td>
       </tr>`).join('');
-      document.getElementById('bomCountNodes').innerText = STATE.nodes.length + ' items';
+      document.getElementById('bomCountNodes').innerText = validNodes.length + ' items';
 
       const tPaths = document.getElementById('bomTablePathways');
       const pGroups = {}; let pTot = 0;
@@ -1140,18 +1248,24 @@
       const tCables = document.getElementById('bomTableCables');
       tCables.innerHTML = STATE.connections.map(c => {
         const n1=STATE.nodes.find(x=>x.id===c.from); const n2=STATE.nodes.find(x=>x.id===c.to);
-        return `<tr class="hover:bg-slate-800"><td class="p-2">${LINE_STYLES[c.type].label}</td><td class="p-2 text-slate-400">${n1?.name} ➔ ${n2?.name}</td><td class="p-2 text-slate-400">-</td><td class="p-2 text-sky-400 font-bold">${(c.lengthMeters*1.1).toFixed(1)}m</td></tr>`;
+        const name1 = n1 && n1.type === 'anchor' ? 'Espacio Libre' : (n1?.name || '?');
+        const name2 = n2 && n2.type === 'anchor' ? 'Espacio Libre' : (n2?.name || '?');
+        return `<tr class="hover:bg-slate-800"><td class="p-2">${LINE_STYLES[c.type].label}</td><td class="p-2 text-slate-400">${name1} ➔ ${name2}</td><td class="p-2 text-slate-400">-</td><td class="p-2 text-sky-400 font-bold">${(c.lengthMeters*1.1).toFixed(1)}m</td></tr>`;
       }).join('');
       document.getElementById('bomCountCables').innerText = STATE.connections.length + ' enlaces';
     }
 
     function exportBomCSV() {
       let csv = 'Categoria,Elemento,Marca_Modelo,Cant/Longitud_Neta,Cant_Con_Merma,Notas\n';
-      STATE.nodes.forEach(n => csv+=`Equipos,${LIB_DEFS[n.type].label},${n.props.brand||''} ${n.props.model||''},1,1,${n.name}\n`);
+      const validNodes = STATE.nodes.filter(n => n.type !== 'anchor');
+      
+      validNodes.forEach(n => csv+=`Equipos,${LIB_DEFS[n.type].label},${n.props.brand||''} ${n.props.model||''},1,1,${n.name}\n`);
       STATE.pathways.forEach(p => csv+=`Canalizacion,${LINE_STYLES[p.type].label},Tramo,${p.lengthMeters.toFixed(2)},${(p.lengthMeters*1.05).toFixed(2)},Tubos 3m: ${Math.ceil(p.lengthMeters*1.05/3)}\n`);
       STATE.connections.forEach(c => {
          const n1=STATE.nodes.find(x=>x.id===c.from); const n2=STATE.nodes.find(x=>x.id===c.to);
-         csv+=`Cableado,${LINE_STYLES[c.type].label},De ${n1?.name} a ${n2?.name},${c.lengthMeters.toFixed(2)},${(c.lengthMeters*1.1).toFixed(2)},\n`;
+         const name1 = n1 && n1.type === 'anchor' ? 'Espacio Libre' : (n1?.name || '?');
+         const name2 = n2 && n2.type === 'anchor' ? 'Espacio Libre' : (n2?.name || '?');
+         csv+=`Cableado,${LINE_STYLES[c.type].label},De ${name1} a ${name2},${c.lengthMeters.toFixed(2)},${(c.lengthMeters*1.1).toFixed(2)},\n`;
       });
       const blob = new Blob([csv], {type: 'text/csv'});
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'BOM_TechDiagram.csv'; a.click();
@@ -1184,6 +1298,7 @@
       yPos = doc.lastAutoTable.finalY + 30;
 
       const pathData = parseTable('bomTablePathways');
+      if(yPos > 700) { doc.addPage(); yPos = 40; }
       doc.text("Canalizaciones y Soportes (TIA-569)", 40, yPos);
       doc.autoTable({ startY: yPos+10, head: pathData.head, body: pathData.body, styles: { fontSize: 8 }, headStyles: { fillColor: [8, 145, 178] } });
       yPos = doc.lastAutoTable.finalY + 30;
@@ -1201,13 +1316,15 @@
       
       let uY = 60;
       const adj = {}; const inDegree = {};
-      STATE.nodes.forEach(n => { adj[n.id] = []; inDegree[n.id] = 0; });
+      const validNodes = STATE.nodes.filter(n => n.type !== 'anchor');
+      
+      validNodes.forEach(n => { adj[n.id] = []; inDegree[n.id] = 0; });
       STATE.connections.forEach(c => { if(adj[c.from] && inDegree[c.to] !== undefined) { adj[c.from].push({to: c.to, type: c.type}); inDegree[c.to]++; } });
-      const roots = STATE.nodes.filter(n => inDegree[n.id] === 0);
+      const roots = validNodes.filter(n => inDegree[n.id] === 0);
 
       function printTree(nodeId, depth) {
           if(uY > 780) { doc.addPage(); uY = 40; }
-          const n = STATE.nodes.find(x => x.id === nodeId);
+          const n = validNodes.find(x => x.id === nodeId);
           if(!n) return;
           const indent = 40 + (depth * 20);
           doc.setTextColor(0); doc.setFont("helvetica", "bold");
@@ -1224,6 +1341,16 @@
       }
       roots.forEach(r => { printTree(r.id, 0); uY += 10; });
 
+      // Añadir Notas si existen
+      if (STATE.projectNotes && STATE.projectNotes.trim() !== '') {
+         doc.addPage();
+         doc.setFontSize(14); doc.setTextColor(0);
+         doc.text("Memoria Descriptiva y Notas de Proyecto", 40, 40);
+         doc.setFontSize(10); doc.setTextColor(60); doc.setFont("helvetica", "normal");
+         const splitText = doc.splitTextToSize(STATE.projectNotes, 510);
+         doc.text(splitText, 40, 70);
+      }
+
       doc.save(`BOM_${STATE.projectConfig.name.replace(/\s+/g, '_')}.pdf`);
       showToast('BOM Exportado a PDF');
     }
@@ -1231,7 +1358,7 @@
     function openProjectManager() { document.getElementById('modalProjects').classList.remove('hidden'); renderLocalProjects(); }
     function saveProjectToLocal() {
       const db = JSON.parse(localStorage.getItem('techdiag_db') || '{}');
-      db[STATE.projectConfig.name] = { date: new Date().toLocaleString(), data: { nodes: STATE.nodes, connections: STATE.connections, pathways: STATE.pathways, projectConfig: STATE.projectConfig, scale: STATE.scaleMetersPerPx } };
+      db[STATE.projectConfig.name] = { date: new Date().toLocaleString(), data: { nodes: STATE.nodes, connections: STATE.connections, pathways: STATE.pathways, projectConfig: STATE.projectConfig, projectNotes: STATE.projectNotes, scale: STATE.scaleMetersPerPx } };
       localStorage.setItem('techdiag_db', JSON.stringify(db));
       showToast('Proyecto Guardado'); renderLocalProjects();
     }
@@ -1251,7 +1378,7 @@
     function loadLocalProj(k) {
       const db = JSON.parse(localStorage.getItem('techdiag_db') || '{}');
       if(db[k]) {
-        STATE.nodes = db[k].data.nodes; STATE.connections = db[k].data.connections; STATE.pathways = db[k].data.pathways; STATE.projectConfig = db[k].data.projectConfig; STATE.scaleMetersPerPx = db[k].data.scale || 0.05;
+        STATE.nodes = db[k].data.nodes; STATE.connections = db[k].data.connections; STATE.pathways = db[k].data.pathways; STATE.projectConfig = db[k].data.projectConfig; STATE.projectNotes = db[k].data.projectNotes || ''; STATE.scaleMetersPerPx = db[k].data.scale || 0.05;
         document.getElementById('projectName').value = STATE.projectConfig.name;
         if(STATE.projectConfig.logoDataUrl) { const img = document.getElementById('projectLogoImg'); img.src = STATE.projectConfig.logoDataUrl; img.classList.remove('hidden'); document.getElementById('projectLogoIcon').classList.add('hidden'); }
         updateAll(); closeModal('modalProjects'); showToast('Cargado');
@@ -1260,14 +1387,14 @@
     function delLocalProj(k) { const db = JSON.parse(localStorage.getItem('techdiag_db') || '{}'); delete db[k]; localStorage.setItem('techdiag_db', JSON.stringify(db)); renderLocalProjects(); }
 
     function exportProjectJSON() {
-      const blob = new Blob([JSON.stringify({ nodes: STATE.nodes, connections: STATE.connections, pathways: STATE.pathways, projectConfig: STATE.projectConfig, scale: STATE.scaleMetersPerPx })], {type: 'application/json'});
+      const blob = new Blob([JSON.stringify({ nodes: STATE.nodes, connections: STATE.connections, pathways: STATE.pathways, projectConfig: STATE.projectConfig, projectNotes: STATE.projectNotes, scale: STATE.scaleMetersPerPx })], {type: 'application/json'});
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${STATE.projectConfig.name}.json`; a.click();
     }
     function importProjectJSON(e) {
       const file = e.target.files[0]; if(!file) return;
       const reader = new FileReader(); reader.onload = (evt) => {
         const d = JSON.parse(evt.target.result);
-        STATE.nodes = d.nodes||[]; STATE.connections = d.connections||[]; STATE.pathways = d.pathways||[]; STATE.projectConfig = d.projectConfig||{name:"Importado"}; STATE.scaleMetersPerPx = d.scale||0.05;
+        STATE.nodes = d.nodes||[]; STATE.connections = d.connections||[]; STATE.pathways = d.pathways||[]; STATE.projectConfig = d.projectConfig||{name:"Importado"}; STATE.projectNotes = d.projectNotes||''; STATE.scaleMetersPerPx = d.scale||0.05;
         document.getElementById('projectName').value = STATE.projectConfig.name;
         updateAll(); closeModal('modalProjects');
       }; reader.readAsText(file); e.target.value='';
