@@ -93,7 +93,7 @@
       <button id="toolConnect" onclick="setMode('connect')" title="Cablear Multipunto Libre (C)" class="p-1.5 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 text-slate-300 hover:bg-slate-800 transition">
         <i data-lucide="cable" class="w-4 h-4"></i> Cablear
       </button>
-      <button id="toolPathway" onclick="setMode('pathway')" title="Canalización Multipunto Libre (P)" class="p-1.5 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 text-slate-300 hover:bg-slate-800 transition">
+      <button id="toolPathway" onclick="setMode('pathway')" title="Canalización Libre (P)" class="p-1.5 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 text-slate-300 hover:bg-slate-800 transition">
         <i data-lucide="route" class="w-4 h-4"></i> Canalización
       </button>
 
@@ -155,7 +155,7 @@
       </button>
       
       <button onclick="openPvCalculatorModal()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 flex items-center gap-1.5 transition">
-        <i data-lucide="sun" class="w-4 h-4"></i> Solar NEC
+        <i data-lucide="sun" class="w-4 h-4"></i> Solar & ROI
       </button>
       
       <button onclick="openBomModal()" class="px-2.5 py-1.5 text-xs font-medium bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-600/30 rounded-lg flex items-center gap-1.5 transition">
@@ -182,7 +182,7 @@
       <div class="p-3 border-b border-slate-800">
         <div class="relative">
           <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-2.5 top-2.5"></i>
-          <input type="text" id="searchComp" onkeyup="filterLibrary()" placeholder="Buscar ZTE, GPON, Solar, CCTV..." class="w-full bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 outline-none focus:border-indigo-500">
+          <input type="text" id="searchComp" onkeyup="filterLibrary()" placeholder="Buscar Sigenergy, Canadian, GPON..." class="w-full bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 outline-none focus:border-indigo-500">
         </div>
       </div>
       
@@ -219,7 +219,6 @@
 
       <!-- Controles flotantes Canvas -->
       <div class="absolute bottom-4 left-4 flex flex-col gap-2 z-10">
-        <!-- Zoom y Deshacer/Rehacer -->
         <div class="flex gap-2">
           <div class="bg-slate-950/80 backdrop-blur border border-slate-800 rounded-lg p-1.5 text-xs flex gap-1 shadow-xl">
             <button onclick="undo()" title="Deshacer (Ctrl+Z)" class="p-1 hover:bg-slate-800 rounded text-slate-400"><i data-lucide="undo-2" class="w-4 h-4"></i></button>
@@ -293,37 +292,28 @@
   <!-- ================= MODALES ================= -->
 
   <!-- MODAL: MANUAL DE USUARIO -->
-  <div id="modalManual" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="modalManual" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[85vh]">
       <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950 rounded-t-2xl">
         <h3 class="font-bold text-slate-100 flex items-center gap-2"><i data-lucide="book-open" class="text-indigo-400"></i> Manual de Usuario</h3>
         <button onclick="closeModal('modalManual')" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
       </div>
       <div class="p-5 overflow-y-auto space-y-5 text-sm text-slate-300">
-        
         <div>
           <h4 class="font-bold text-indigo-400 flex items-center gap-2 mb-2"><i data-lucide="map" class="w-4 h-4"></i> 1. Planos y Escala</h4>
           <p class="mb-1"><strong>Cargar:</strong> Haz clic en el botón superior "Plano" para subir tu PDF o imagen.</p>
-          <p><strong>Calibrar:</strong> Haz clic en el botón de la Regla (1m=20px). Selecciona dos puntos en el plano de los que conozcas su distancia real y escríbela. Esto garantiza que las mediciones de tubería y cable sean exactas.</p>
+          <p><strong>Calibrar:</strong> Haz clic en el botón de la Regla (1m=20px). Selecciona dos puntos en el plano y escribe su distancia real.</p>
         </div>
-
         <div>
           <h4 class="font-bold text-amber-400 flex items-center gap-2 mb-2"><i data-lucide="mouse-pointer-2" class="w-4 h-4"></i> 2. Equipos y Movimiento</h4>
-          <p class="mb-1"><strong>Añadir:</strong> En el menú izquierdo, haz clic en cualquier ícono (Cámaras, Paneles, etc.) y aparecerá en el centro.</p>
-          <p><strong>Arrastrar:</strong> Con el botón de Mover activado (Atajo: V), haz clic sostenido sobre el nodo para moverlo.</p>
+          <p class="mb-1"><strong>Añadir:</strong> En el menú izquierdo, haz clic en cualquier ícono (Ej. Canadian Solar o Sigenergy).</p>
+          <p><strong>Zoom:</strong> Usa la rueda de tu ratón para acercarte donde apunta el cursor.</p>
         </div>
-
         <div>
-          <h4 class="font-bold text-emerald-400 flex items-center gap-2 mb-2"><i data-lucide="route" class="w-4 h-4"></i> 3. Trazado Multipunto y Libre</h4>
-          <p class="mb-1"><strong>Conectar Equipos:</strong> Selecciona el modo "Cablear" (C) o "Canalización" (P). Haz clic en el equipo origen. Ahora puedes hacer clics en el plano vacío para crear esquinas y bordear paredes. Finalmente, haz clic en el equipo destino para cerrar la ruta.</p>
-          <p><strong>Trazado Libre (Sin destino):</strong> Si deseas dibujar tuberías sin conectarlas a un equipo final, inicia tu ruta y cuando quieras terminar, haz <strong>Clic Derecho</strong> (o Doble Clic). La ruta quedará guardada.</p>
+          <h4 class="font-bold text-emerald-400 flex items-center gap-2 mb-2"><i data-lucide="route" class="w-4 h-4"></i> 3. Trazado Libre o Multipunto</h4>
+          <p class="mb-1"><strong>Conectar Equipos:</strong> Modo "Cablear". Clic en equipo A, clics libres para doblar esquinas, y clic en equipo B.</p>
+          <p><strong>Trazado Libre:</strong> Modo "Canalización". Haz clic en el espacio vacío para iniciar, dobla esquinas, y haz <strong>Clic Derecho</strong> para terminar y soltar la tubería.</p>
         </div>
-
-        <div>
-          <h4 class="font-bold text-sky-400 flex items-center gap-2 mb-2"><i data-lucide="edit-3" class="w-4 h-4"></i> 4. Edición de Rutas</h4>
-          <p>Para modificar una ruta existente, vuelve al modo Mover (V). Haz clic sobre la línea. Aparecerán círculos blancos en cada vértice. Arrástralos para ajustar la ruta perfectamente a la pared.</p>
-        </div>
-
       </div>
       <div class="p-4 border-t border-slate-800 bg-slate-950 flex justify-end gap-2 rounded-b-2xl">
         <button onclick="closeModal('modalManual')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold transition">Entendido</button>
@@ -332,14 +322,14 @@
   </div>
 
   <!-- MODAL: NOTAS -->
-  <div id="modalNotes" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="modalNotes" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col h-[80vh]">
       <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950 rounded-t-2xl">
         <h3 class="font-bold text-slate-100 flex items-center gap-2"><i data-lucide="file-edit" class="text-sky-400"></i> Memoria Descriptiva</h3>
         <button onclick="closeModal('modalNotes')" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
       </div>
       <div class="p-4 flex-1 flex flex-col">
-        <p class="text-xs text-slate-400 mb-2">Escribe las especificaciones técnicas o instrucciones. Se adjuntará al PDF exportado.</p>
+        <p class="text-xs text-slate-400 mb-2">Escribe las especificaciones técnicas. Se adjuntará al PDF exportado.</p>
         <textarea id="projectNotesTextarea" class="w-full flex-1 bg-slate-950 border border-slate-700 rounded-lg p-3 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 font-mono resize-none" placeholder="1. Especificaciones de puesta a tierra..."></textarea>
       </div>
       <div class="p-4 border-t border-slate-800 bg-slate-950 flex justify-end gap-2 rounded-b-2xl">
@@ -349,7 +339,7 @@
   </div>
 
   <!-- MODAL: BOM Y UNIFILAR -->
-  <div id="modalBOM" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="modalBOM" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-5xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
       <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950 rounded-t-2xl">
         <h3 class="font-bold text-slate-100 flex items-center gap-2"><i data-lucide="table-2" class="text-emerald-400"></i> Metrado, Materiales y Unifilar</h3>
@@ -412,7 +402,7 @@
   </div>
 
   <!-- MODAL: PROYECTOS -->
-  <div id="modalProjects" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="modalProjects" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl shadow-2xl flex flex-col">
       <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950 rounded-t-2xl">
         <h3 class="font-bold text-slate-100 flex items-center gap-2"><i data-lucide="folder-open" class="text-indigo-400"></i> Gestor de Proyectos</h3>
@@ -422,7 +412,7 @@
         <button onclick="saveProjectToLocal()" class="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2"><i data-lucide="save" class="w-4 h-4"></i> Guardar Copia Local</button>
         <button onclick="exportProjectJSON()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs border border-slate-700" title="Descargar JSON"><i data-lucide="download"></i></button>
         <label class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs border border-slate-700 cursor-pointer" title="Cargar JSON">
-          <i data-lucide="upload"></i> <input type="file" accept=".json" class="hidden" onchange="importProjectJSON(event)">
+          <i data-lucide="upload"></i> <input type="file" accept=".json" class="hidden" id="importJsonInput" onchange="importProjectJSON(event)">
         </label>
       </div>
       <div class="p-4 flex-1 overflow-y-auto min-h-[200px] max-h-[50vh]">
@@ -432,36 +422,60 @@
     </div>
   </div>
 
-  <!-- MODAL: SOLAR -->
-  <div id="modalSolar" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 w-full max-w-xl rounded-2xl shadow-2xl flex flex-col">
+  <!-- MODAL: SOLAR & FINANCIERO -->
+  <div id="modalSolar" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col">
       <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950 rounded-t-2xl">
-        <h3 class="font-bold text-slate-100 flex items-center gap-2"><i data-lucide="sun" class="text-amber-400"></i> Asistente Solar (NEC 690)</h3>
+        <h3 class="font-bold text-slate-100 flex items-center gap-2"><i data-lucide="sun" class="text-amber-400"></i> Asistente Solar & ROI Comercial</h3>
         <button onclick="closeModal('modalSolar')" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
       </div>
-      <div class="p-5 space-y-4 text-xs text-slate-300">
-        <div class="grid grid-cols-2 gap-3">
-          <div><label class="block text-slate-400 mb-1">Módulos en Serie</label><input type="number" id="calcSolarN" value="12" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5"></div>
-          <div><label class="block text-slate-400 mb-1">Temp. Mínima Sitio (°C)</label><input type="number" id="calcSolarTmin" value="0" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5"></div>
-          <div><label class="block text-slate-400 mb-1">Voc Panel STC (V)</label><input type="number" id="calcSolarVoc" value="51.2" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5"></div>
-          <div><label class="block text-slate-400 mb-1">Isc Panel STC (A)</label><input type="number" id="calcSolarIsc" value="14.2" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5"></div>
-        </div>
-        <div class="p-3 bg-slate-950 border border-slate-800 rounded-lg flex justify-between items-center">
-          <div>
-            <div class="text-[10px] text-amber-400 uppercase font-bold">Voc Máx Corregido</div>
-            <div id="resVoc" class="text-lg font-mono font-bold text-white">0 V</div>
-          </div>
-          <div class="text-right">
-            <div class="text-[10px] text-emerald-400 uppercase font-bold">Ampacidad (1.56x)</div>
-            <div id="resAmp" class="text-lg font-mono font-bold text-white">0 A</div>
+      <div class="p-5 space-y-6 text-xs text-slate-300 max-h-[80vh] overflow-y-auto">
+        
+        <div class="space-y-3">
+          <h4 class="font-bold text-indigo-400 uppercase border-b border-slate-800 pb-1">1. Análisis de Consumo y Tarifas</h4>
+          <div class="grid grid-cols-3 gap-3">
+            <div><label class="block text-slate-400 mb-1">Consumo Mensual (kWh)</label><input type="number" id="calcSolarConsumo" value="1500" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 focus:border-indigo-500"></div>
+            <div><label class="block text-slate-400 mb-1">Tarifa Eléctrica ($/kWh)</label><input type="number" step="0.01" id="calcSolarTarifa" value="0.25" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 focus:border-indigo-500"></div>
+            <div><label class="block text-slate-400 mb-1">Costo Sistema Instalado ($)</label><input type="number" id="calcSolarCostoInv" value="8500" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 focus:border-indigo-500"></div>
           </div>
         </div>
+
+        <div class="space-y-3">
+          <h4 class="font-bold text-amber-400 uppercase border-b border-slate-800 pb-1">2. Dimensionamiento Canadian Solar / Sigenergy</h4>
+          <div class="grid grid-cols-3 gap-3">
+            <div><label class="block text-slate-400 mb-1">Potencia Instalada (kWp)</label><input type="number" id="calcSolarKwp" readonly class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1.5 text-slate-400 font-mono"></div>
+            <div><label class="block text-slate-400 mb-1">Horas Sol Pico (HSP)</label><input type="number" id="calcSolarHsp" value="5.0" step="0.1" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 focus:border-indigo-500"></div>
+            <div><label class="block text-slate-400 mb-1">Perf. Ratio (PR %)</label><input type="number" id="calcSolarPr" value="80" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 focus:border-indigo-500"></div>
+          </div>
+          <div class="grid grid-cols-4 gap-3 pt-2">
+            <div class="col-span-1"><label class="block text-slate-400 mb-1">Módulos x String</label><input type="number" id="calcSolarN" value="12" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5"></div>
+            <div class="col-span-1"><label class="block text-slate-400 mb-1">T. Mínima (°C)</label><input type="number" id="calcSolarTmin" value="0" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5"></div>
+            <div class="col-span-1"><label class="block text-slate-400 mb-1">Voc Panel (V)</label><input type="number" id="calcSolarVoc" value="52.4" step="0.1" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5"></div>
+            <div class="col-span-1"><label class="block text-slate-400 mb-1">Isc Panel (A)</label><input type="number" id="calcSolarIsc" value="14.5" step="0.1" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="p-3 bg-slate-950 border border-slate-800 rounded-lg">
+            <div class="text-[10px] text-amber-400 uppercase font-bold mb-1">Resultados Técnicos (NEC 690)</div>
+            <div class="flex justify-between items-center"><span class="text-slate-400">Voc Máx Corregido:</span> <span id="resVoc" class="font-mono font-bold text-white">0 V</span></div>
+            <div class="flex justify-between items-center"><span class="text-slate-400">Ampacidad (1.56x):</span> <span id="resAmp" class="font-mono font-bold text-white">0 A</span></div>
+            <div class="flex justify-between items-center"><span class="text-slate-400">Generación Mensual:</span> <span id="resGenMensual" class="font-mono font-bold text-sky-400">0 kWh</span></div>
+          </div>
+          <div class="p-3 bg-emerald-950/20 border border-emerald-900/40 rounded-lg">
+            <div class="text-[10px] text-emerald-400 uppercase font-bold mb-1">Retorno de Inversión (ROI)</div>
+            <div class="flex justify-between items-center"><span class="text-slate-400">Cobertura Factura:</span> <span id="resCobertura" class="font-mono font-bold text-emerald-300">0 %</span></div>
+            <div class="flex justify-between items-center"><span class="text-slate-400">Ahorro Mensual:</span> <span id="resAhorroMensual" class="font-mono font-bold text-emerald-400">$ 0</span></div>
+            <div class="flex justify-between items-center"><span class="text-slate-400">ROI Proyectado:</span> <span id="resROI" class="font-mono font-bold text-white">0 Años</span></div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 
   <!-- MODAL: CALIBRACIÓN -->
-  <div id="modalCalibrate" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+  <div id="modalCalibrate" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-xl p-4 shadow-2xl">
       <h3 class="font-bold text-amber-400 text-sm mb-2 flex items-center gap-2"><i data-lucide="ruler"></i> Fijar Escala del Plano</h3>
       <p class="text-xs text-slate-400 mb-4">Distancia medida: <span id="calibPxSpan" class="text-white font-mono bg-slate-800 px-1 rounded">0</span> px.<br>Equivale a metros:</p>
@@ -474,14 +488,14 @@
   </div>
 
   <!-- TOAST NOTIFICATION -->
-  <div id="toast" class="fixed bottom-6 right-6 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-800 text-white px-4 py-2.5 rounded-lg border border-slate-700 shadow-2xl text-xs flex items-center gap-2 z-50 pointer-events-none">
+  <div id="toast" class="fixed bottom-6 right-6 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-800 text-white px-4 py-2.5 rounded-lg border border-slate-700 shadow-2xl text-xs flex items-center gap-2 z-[70] pointer-events-none">
     <i data-lucide="info" class="w-4 h-4 text-indigo-400"></i> <span id="toastMsg">Acción</span>
   </div>
 
   <!-- ================= LÓGICA JAVASCRIPT ================= -->
   <script>
     const STATE = {
-      projectConfig: { name: "Proyecto de Ingeniería 01", logoDataUrl: null },
+      projectConfig: { name: "Proyecto de Ingeniería 01", logoDataUrl: null, solarSettings: {} },
       projectNotes: "",
       nodes: [], connections: [], pathways: [],
       mode: 'select', scaleMetersPerPx: 0.05,
@@ -497,19 +511,20 @@
     let HISTORY_INDEX = -1;
     let isRestoringHistory = false;
 
+    // LIBRERÍA EXTENDIDA (SIGENERGY, CANADIAN SOLAR, ZTE, IoT)
     const LIB_DEFS = {
-      // GPON & FTTR (ZTE y genéricos)
-      gpon_olt_zte: { cat: 'GPON/FTTH', label: 'OLT ZTE C320/C620', icon: 'server', color: '#10b981', props: { brand: 'ZTE', model: 'ZXA10 C320', ports: 'PON, Uplink 10G', poeWatts: 0, voltage: '-48V DC' } },
-      gpon_ont_zte: { cat: 'GPON/FTTH', label: 'ONT ZTE F609/F660', icon: 'router', color: '#10b981', props: { brand: 'ZTE', model: 'F660 V8', ports: '1xPON, 4xGE, Wi-Fi', poeWatts: 0, voltage: '12V DC' } },
-      gpon_splitter_8: { cat: 'GPON/FTTH', label: 'Splitter PLC 1:8', icon: 'git-merge', color: '#059669', props: { brand: 'Genérico', model: '1x8 SC/APC', ports: '1 In, 8 Out', poeWatts: 0, voltage: 'Pasivo' } },
-      gpon_splitter_16: { cat: 'GPON/FTTH', label: 'Splitter PLC 1:16', icon: 'git-merge', color: '#059669', props: { brand: 'Genérico', model: '1x16 SC/APC', ports: '1 In, 16 Out', poeWatts: 0, voltage: 'Pasivo' } },
+      // GPON & FTTR (ZTE)
+      gpon_olt_zte: { cat: 'GPON/FTTH', label: 'OLT ZTE C620', icon: 'server', color: '#10b981', props: { brand: 'ZTE', model: 'ZXA10 C620', ports: 'PON, Uplink 10G', poeWatts: 0, voltage: '-48V DC' } },
+      gpon_ont_zte: { cat: 'GPON/FTTH', label: 'ONT ZTE F660 V8', icon: 'router', color: '#10b981', props: { brand: 'ZTE', model: 'F660 V8', ports: '1xPON, 4xGE, Wi-Fi', poeWatts: 0, voltage: '12V DC' } },
+      gpon_splitter_8: { cat: 'GPON/FTTH', label: 'Splitter PLC 1:8', icon: 'git-merge', color: '#059669', props: { brand: 'ZTE/Genérico', model: '1x8 SC/APC', ports: '1 In, 8 Out', poeWatts: 0, voltage: 'Pasivo' } },
+      gpon_splitter_16: { cat: 'GPON/FTTH', label: 'Splitter PLC 1:16', icon: 'git-merge', color: '#059669', props: { brand: 'ZTE/Genérico', model: '1x16 SC/APC', ports: '1 In, 16 Out', poeWatts: 0, voltage: 'Pasivo' } },
       fat_box: { cat: 'GPON/FTTH', label: 'Caja NAP / FAT 16P', icon: 'box', color: '#34d399', props: { brand: '', model: '', ports: '16x SC/APC', poeWatts: 0, voltage: 'Pasivo' } },
       fttr_master: { cat: 'FTTR', label: 'Router Master FTTR', icon: 'wifi-high', color: '#14b8a6', props: { brand: 'ZTE', model: 'G450', ports: 'Uplink PON, Down Óptico', poeWatts: 0, voltage: '12V DC' } },
       fttr_slave: { cat: 'FTTR', label: 'Esclavo FTTR Wi-Fi 6', icon: 'wifi', color: '#14b8a6', props: { brand: 'ZTE', model: 'G160', ports: 'Entrada Fibra Invisible', poeWatts: 0, voltage: 'PoF / DC' } },
 
       // CCTV
-      cam_dome: { cat: 'CCTV', label: 'Cámara Domo IP 4K', icon: 'video', color: '#0ea5e9', props: { brand: 'Hikvision/Dahua', model: '', ports: '1x RJ45', poeWatts: 7, voltage: '48V PoE' } },
-      cam_bullet: { cat: 'CCTV', label: 'Cámara Bullet LPR', icon: 'camera', color: '#0ea5e9', props: { brand: '', model: '', ports: '1x RJ45', poeWatts: 9, voltage: '48V PoE' } },
+      cam_dome: { cat: 'CCTV', label: 'Cámara Domo IP 4K', icon: 'video', color: '#0ea5e9', props: { brand: 'Hikvision', model: '', ports: '1x RJ45', poeWatts: 7, voltage: '48V PoE' } },
+      cam_bullet: { cat: 'CCTV', label: 'Cámara Bullet LPR', icon: 'camera', color: '#0ea5e9', props: { brand: 'Dahua', model: '', ports: '1x RJ45', poeWatts: 9, voltage: '48V PoE' } },
       cam_ptz: { cat: 'CCTV', label: 'Cámara PTZ 360°', icon: 'cctv', color: '#0284c7', props: { brand: '', model: '', ports: '1x RJ45', poeWatts: 25, voltage: 'Hi-PoE' } },
       nvr_server: { cat: 'CCTV', label: 'NVR / VMS 32 Ch', icon: 'hard-drive', color: '#0369a1', props: { brand: '', model: '', ports: '2x LAN', poeWatts: 0, voltage: '120V AC' } },
       acs_panel: { cat: 'Acceso', label: 'Control Acceso 4P', icon: 'lock-keyhole', color: '#0d9488', props: { brand: '', model: '', ports: 'Wiegand/OSDP', poeWatts: 15, voltage: '12V DC' } },
@@ -521,16 +536,16 @@
       iot_relay: { cat: 'IoT', label: 'Relé Modbus 8CH', icon: 'cpu', color: '#7c3aed', props: { brand: '', model: '', ports: 'RS485', poeWatts: 0, voltage: '24V DC' } },
 
       // Redes IT
-      switch_poe: { cat: 'Redes', label: 'Switch Core 24P PoE+', icon: 'network', color: '#4f46e5', props: { brand: 'Cisco/Aruba', model: '', ports: '24x RJ45, 4x SFP', poeWatts: 0, voltage: '120/240V' } },
+      switch_poe: { cat: 'Redes', label: 'Switch Core 24P PoE+', icon: 'network', color: '#4f46e5', props: { brand: 'Cisco', model: '', ports: '24x RJ45, 4x SFP', poeWatts: 0, voltage: '120/240V' } },
       router_fw: { cat: 'Redes', label: 'Router Firewall', icon: 'shield-check', color: '#4338ca', props: { brand: 'Fortinet', model: '', ports: 'WAN/LAN', poeWatts: 0, voltage: '120V AC' } },
       ap_wifi: { cat: 'Redes', label: 'Access Point Wi-Fi 6', icon: 'router', color: '#6366f1', props: { brand: 'Ubiquiti', model: 'U6-Pro', ports: '1x RJ45', poeWatts: 14, voltage: 'PoE+' } },
       rack_it: { cat: 'Redes', label: 'Gabinete Rack 42U', icon: 'server-cog', color: '#475569', props: { brand: '', model: '', ports: 'PDU', poeWatts: 0, voltage: '120V AC' } },
 
-      // Solar & BESS
-      pv_panel: { cat: 'Solar', label: 'Panel Solar TOPCon', icon: 'sun', color: '#f59e0b', props: { brand: 'Jinko/Longi', model: '580W Bifacial', ports: 'MC4', pvWp: 580, poeWatts: 0, voltage: '51.2V Voc' } },
-      pv_string: { cat: 'Solar', label: 'String (10 Paneles)', icon: 'grip', color: '#f59e0b', props: { brand: '', model: '', ports: 'MC4', pvWp: 5800, poeWatts: 0, voltage: '512V Voc' } },
-      pv_inv_hybrid: { cat: 'Solar', label: 'Inversor Híbrido', icon: 'zap', color: '#ea580c', props: { brand: 'Growatt/Deye', model: '', ports: 'DC/AC/Bat', pvWp: 0, poeWatts: 0, voltage: '240V AC' } },
-      bess_rack: { cat: 'BESS', label: 'Batería Litio Rack', icon: 'battery-medium', color: '#22c55e', props: { brand: 'Pylontech', model: 'US5000', ports: 'Amphenol', bessKwh: 5.12, poeWatts: 0, voltage: '48V DC' } },
+      // Solar & BESS (CANADIAN SOLAR & SIGENERGY)
+      pv_panel: { cat: 'Solar', label: 'Canadian Solar HiKu7', icon: 'sun', color: '#f59e0b', props: { brand: 'Canadian Solar', model: 'CS7L-600W', ports: 'MC4', pvWp: 600, poeWatts: 0, voltage: '52.4V Voc' } },
+      pv_string: { cat: 'Solar', label: 'String Solar (10 Mods)', icon: 'grip', color: '#f59e0b', props: { brand: 'Canadian Solar', model: 'Array 6kWp', ports: 'MC4', pvWp: 6000, poeWatts: 0, voltage: '524V Voc' } },
+      pv_inv_hybrid: { cat: 'Solar', label: 'Sigenergy SigenStor Inv.', icon: 'zap', color: '#ea580c', props: { brand: 'Sigenergy', model: 'Sigen Energy Gateway 10kW', ports: 'DC/AC/SigenLink', pvWp: 0, poeWatts: 0, voltage: '240V AC' } },
+      bess_rack: { cat: 'BESS', label: 'Sigenergy SigenBat 8kWh', icon: 'battery-medium', color: '#22c55e', props: { brand: 'Sigenergy', model: 'BAT-8.0', ports: 'SigenLink', bessKwh: 8.0, poeWatts: 0, voltage: '400V DC' } },
 
       // Canalizaciones
       box_4x4: { cat: 'Canalización', label: 'Caja 4x4 EMT', icon: 'package', color: '#06b6d4', props: { brand: '', model: 'Acero Galv.', ports: 'KO 3/4"', poeWatts: 0, voltage: 'N/A' } },
@@ -603,7 +618,7 @@
         } catch(e) {}
       }
       
-      pushHistory(); // Guardar estado inicial en historial
+      pushHistory(); 
 
       // Atajos Teclado
       window.addEventListener('keydown', e => {
@@ -969,7 +984,6 @@
        }
     });
 
-    // Zoom Tracking con la rueda del ratón
     canvasContainer.addEventListener('wheel', e => {
       e.preventDefault();
       const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
@@ -1075,7 +1089,7 @@
             <input type="text" value="${n.props.model || ''}" onchange="n.props.model=this.value; updateAll(); pushHistory()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-xs text-slate-200"></div>
           </div>
           
-          <div><label class="block text-[10px] text-slate-400 mb-1">Puertos / Interfaces (Ej: 4xRJ45)</label>
+          <div><label class="block text-[10px] text-slate-400 mb-1">Puertos / Interfaces</label>
           <input type="text" value="${n.props.ports || ''}" onchange="n.props.ports=this.value; updateAll(); pushHistory()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-xs text-slate-200 font-mono"></div>
           
           <div class="grid grid-cols-2 gap-2 border-t border-slate-800 pt-3 mt-3">${propsHtml}</div>
@@ -1093,7 +1107,7 @@
     }
 
     function promptAddCustomProp(nodeId) {
-      const key = prompt("Nombre del campo (Ej: Firmware, Capacidad, Tipo Lente):");
+      const key = prompt("Nombre del campo (Ej: Firmware, Capacidad):");
       if(key) {
         const n = STATE.nodes.find(x => x.id === nodeId);
         if(!n.customProps) n.customProps = {};
@@ -1239,7 +1253,7 @@
 
     function updateMetrics() {
       let pv=0, bess=0, poe=0, path=0;
-      STATE.nodes.forEach(n => { pv+=n.props.pvWp||0; bess+=n.props.bessKwh||0; poe+=n.props.poeWatts||0; });
+      STATE.nodes.forEach(n => { pv+=parseFloat(n.props?.pvWp)||0; bess+=parseFloat(n.props?.bessKwh)||0; poe+=parseFloat(n.props?.poeWatts)||0; });
       STATE.pathways.forEach(p => path+=p.lengthMeters||0);
       document.getElementById('metPv').innerText = `${(pv/1000).toFixed(2)} kWp`;
       document.getElementById('metBess').innerText = `${bess.toFixed(1)} kWh`;
@@ -1256,6 +1270,70 @@
     function saveNotes() {
       STATE.projectNotes = document.getElementById('projectNotesTextarea').value;
       saveState(); closeModal('modalNotes'); showToast('Notas guardadas');
+    }
+
+    function openPvCalculatorModal() { 
+      document.getElementById('modalSolar').classList.remove('hidden'); 
+      
+      // Auto-fetch kWp from Canvas
+      let totalWp = 0;
+      STATE.nodes.forEach(n => { totalWp += parseFloat(n.props?.pvWp) || 0; });
+      document.getElementById('calcSolarKwp').value = (totalWp / 1000).toFixed(2);
+
+      // Load previous settings if available
+      const s = STATE.projectConfig.solarSettings || {};
+      if(s.consumo) document.getElementById('calcSolarConsumo').value = s.consumo;
+      if(s.tarifa) document.getElementById('calcSolarTarifa').value = s.tarifa;
+      if(s.costo) document.getElementById('calcSolarCostoInv').value = s.costo;
+      
+      runSolarCalc(); 
+    }
+
+    function runSolarCalc() {
+      // Technical NEC 690 calculations
+      const n = +document.getElementById('calcSolarN').value || 1; 
+      const t = +document.getElementById('calcSolarTmin').value || 0;
+      const voc = +document.getElementById('calcSolarVoc').value || 0; 
+      const isc = +document.getElementById('calcSolarIsc').value || 0;
+      const vocMax = voc * n * (1 + (25 - t) * 0.0028);
+      
+      document.getElementById('resVoc').innerText = vocMax.toFixed(1) + ' V';
+      document.getElementById('resAmp').innerText = (isc * 1.56).toFixed(1) + ' A';
+
+      // Financial and Generation calculations
+      const kwp = parseFloat(document.getElementById('calcSolarKwp').value) || 0;
+      const hsp = parseFloat(document.getElementById('calcSolarHsp').value) || 5.0;
+      const pr = parseFloat(document.getElementById('calcSolarPr').value) / 100;
+      
+      const genDaily = kwp * hsp * pr;
+      const genMonthly = genDaily * 30;
+      document.getElementById('resGenMensual').innerText = genMonthly.toFixed(1) + ' kWh';
+
+      const consumoMensual = parseFloat(document.getElementById('calcSolarConsumo').value) || 1;
+      const tarifa = parseFloat(document.getElementById('calcSolarTarifa').value) || 0;
+      const costoInv = parseFloat(document.getElementById('calcSolarCostoInv').value) || 1;
+
+      // Save for PDF export
+      STATE.projectConfig.solarSettings = {
+         consumo: consumoMensual,
+         tarifa: tarifa,
+         costo: costoInv,
+         genMensual: genMonthly
+      };
+      saveState();
+
+      let cobertura = (genMonthly / consumoMensual) * 100;
+      document.getElementById('resCobertura').innerText = Math.min(100, cobertura).toFixed(1) + ' %';
+      
+      // Calculate savings (capped at 100% of bill for simple 1:1 net metering)
+      const ahorroMensual = Math.min(genMonthly, consumoMensual) * tarifa;
+      document.getElementById('resAhorroMensual').innerText = '$ ' + ahorroMensual.toFixed(2);
+
+      const ahorroAnual = ahorroMensual * 12;
+      let roi = 0;
+      if(ahorroAnual > 0) roi = costoInv / ahorroAnual;
+      
+      document.getElementById('resROI').innerText = roi > 0 ? roi.toFixed(1) + ' Años' : 'N/A';
     }
 
     function generateUnifilarHTML() {
@@ -1388,7 +1466,7 @@
       
       if(STATE.projectConfig.logoDataUrl) doc.addImage(STATE.projectConfig.logoDataUrl, 'PNG', 40, 30, 80, 40, '', 'FAST');
       doc.setFontSize(16); doc.setTextColor(40);
-      doc.text("TechDiagram Pro - Cómputo de Materiales", 130, 45);
+      doc.text("TechDiagram Pro - Memoria de Proyecto", 130, 45);
       doc.setFontSize(11); doc.setTextColor(100);
       doc.text(`Proyecto: ${STATE.projectConfig.name}`, 130, 65);
       doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 130, 80);
@@ -1451,17 +1529,51 @@
       }
       roots.forEach(r => { printTree(r.id, 0); uY += 10; });
 
+      // ROI / Financial Section if solar is present
+      const s = STATE.projectConfig.solarSettings;
+      let totalWp = 0;
+      STATE.nodes.forEach(n => { totalWp += parseFloat(n.props?.pvWp) || 0; });
+
+      if (totalWp > 0 && s && s.consumo) {
+         doc.addPage();
+         doc.setFontSize(16); doc.setTextColor(0);
+         doc.text("Estudio de Generación Solar y ROI", 40, 50);
+         
+         doc.setFontSize(11); doc.setTextColor(60);
+         doc.text(`Potencia Instalada Total: ${(totalWp / 1000).toFixed(2)} kWp`, 40, 80);
+         doc.text(`Generación Mensual Estimada: ${s.genMensual.toFixed(1)} kWh`, 40, 100);
+         doc.text(`Consumo del Cliente: ${s.consumo} kWh/mes`, 40, 120);
+         
+         const cobertura = Math.min(100, (s.genMensual / s.consumo) * 100);
+         doc.text(`Cobertura Energética: ${cobertura.toFixed(1)} %`, 40, 140);
+         
+         doc.setFontSize(14); doc.setTextColor(2, 132, 199);
+         doc.text("Análisis Financiero", 40, 180);
+         doc.setFontSize(11); doc.setTextColor(60);
+         
+         const ahorroMes = Math.min(s.genMensual, s.consumo) * s.tarifa;
+         doc.text(`Tarifa Eléctrica Promedio: $ ${s.tarifa} / kWh`, 40, 210);
+         doc.text(`Ahorro Mensual Proyectado: $ ${ahorroMes.toFixed(2)}`, 40, 230);
+         doc.text(`Ahorro Anual Proyectado: $ ${(ahorroMes * 12).toFixed(2)}`, 40, 250);
+         doc.text(`Costo Estimado de Instalación: $ ${s.costo}`, 40, 270);
+         
+         const roi = s.costo / (ahorroMes * 12);
+         doc.setFontSize(12); doc.setTextColor(16, 185, 129);
+         doc.text(`Retorno de Inversión (ROI): ${roi.toFixed(1)} Años`, 40, 310);
+      }
+
+      // Descriptive Notes Section
       if (STATE.projectNotes && STATE.projectNotes.trim() !== '') {
          doc.addPage();
          doc.setFontSize(14); doc.setTextColor(0);
-         doc.text("Memoria Descriptiva y Notas de Proyecto", 40, 40);
+         doc.text("Memoria Descriptiva y Notas", 40, 40);
          doc.setFontSize(10); doc.setTextColor(60); doc.setFont("helvetica", "normal");
          const splitText = doc.splitTextToSize(STATE.projectNotes, 510);
          doc.text(splitText, 40, 70);
       }
 
-      doc.save(`BOM_${STATE.projectConfig.name.replace(/\s+/g, '_')}.pdf`);
-      showToast('BOM Exportado a PDF');
+      doc.save(`Memoria_${STATE.projectConfig.name.replace(/\s+/g, '_')}.pdf`);
+      showToast('Proyecto Exportado a PDF');
     }
 
     function openProjectManager() { document.getElementById('modalProjects').classList.remove('hidden'); renderLocalProjects(); }
@@ -1481,7 +1593,7 @@
             <button onclick="delLocalProj('${k}')" class="px-2 py-1.5 bg-red-900/50 text-red-400 rounded text-xs"><i data-lucide="trash" class="w-3 h-3"></i></button>
           </div>
         </div>
-      `).join('') || '<div class="text-slate-500 text-xs">No hay proyectos.</div>';
+      `).join('') || '<div class="text-slate-500 text-xs">No hay proyectos locales guardados.</div>';
       lucide.createIcons();
     }
     function loadLocalProj(k) {
@@ -1490,7 +1602,7 @@
         STATE.nodes = db[k].data.nodes; STATE.connections = db[k].data.connections; STATE.pathways = db[k].data.pathways; STATE.projectConfig = db[k].data.projectConfig; STATE.projectNotes = db[k].data.projectNotes || ''; STATE.scaleMetersPerPx = db[k].data.scale || 0.05;
         document.getElementById('projectName').value = STATE.projectConfig.name;
         if(STATE.projectConfig.logoDataUrl) { const img = document.getElementById('projectLogoImg'); img.src = STATE.projectConfig.logoDataUrl; img.classList.remove('hidden'); document.getElementById('projectLogoIcon').classList.add('hidden'); }
-        updateAll(); closeModal('modalProjects'); showToast('Cargado'); pushHistory();
+        updateAll(); closeModal('modalProjects'); showToast('Proyecto Cargado'); pushHistory();
       }
     }
     function delLocalProj(k) { const db = JSON.parse(localStorage.getItem('techdiag_db') || '{}'); delete db[k]; localStorage.setItem('techdiag_db', JSON.stringify(db)); renderLocalProjects(); }
@@ -1503,19 +1615,10 @@
       const file = e.target.files[0]; if(!file) return;
       const reader = new FileReader(); reader.onload = (evt) => {
         const d = JSON.parse(evt.target.result);
-        STATE.nodes = d.nodes||[]; STATE.connections = d.connections||[]; STATE.pathways = d.pathways||[]; STATE.projectConfig = d.projectConfig||{name:"Importado"}; STATE.projectNotes = d.projectNotes||''; STATE.scaleMetersPerPx = d.scale||0.05;
+        STATE.nodes = d.nodes||[]; STATE.connections = d.connections||[]; STATE.pathways = d.pathways||[]; STATE.projectConfig = d.projectConfig||{name:"Importado", solarSettings: {}}; STATE.projectNotes = d.projectNotes||''; STATE.scaleMetersPerPx = d.scale||0.05;
         document.getElementById('projectName').value = STATE.projectConfig.name;
         updateAll(); closeModal('modalProjects'); pushHistory();
       }; reader.readAsText(file); e.target.value='';
-    }
-
-    function openPvCalculatorModal() { document.getElementById('modalSolar').classList.remove('hidden'); runSolarCalc(); }
-    function runSolarCalc() {
-      const n = +document.getElementById('calcSolarN').value; const t = +document.getElementById('calcSolarTmin').value;
-      const voc = +document.getElementById('calcSolarVoc').value; const isc = +document.getElementById('calcSolarIsc').value;
-      const vocMax = voc * n * (1 + (25 - t) * 0.0028);
-      document.getElementById('resVoc').innerText = vocMax.toFixed(1) + ' V';
-      document.getElementById('resAmp').innerText = (isc * 1.56).toFixed(1) + ' A';
     }
   </script>
 </body>
