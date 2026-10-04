@@ -3,1566 +3,1171 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TechDiagram Pro - Seguridad, Redes, BESS, IoT y Fotovoltaico</title>
+  <title>TechDiagram Pro - Ingeniería GPON, Seguridad, Solar e IoT</title>
+  
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- Lucide Icons (Vectoriales Modernos) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- PDF.js para cargar Planos de Arquitectura -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+
+  <!-- jsPDF y AutoTable para Exportar BOM a PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   
-  <!-- LIBRERÍA PDF.JS PARA LEER PLANOS PDF DIRECTAMENTE EN EL NAVEGADOR -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-  <script>
-      // Configurar el worker de PDF.js (necesario para decodificar en segundo plano)
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-  </script>
-
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          colors: {
-            brand: {
-              50: '#eef2ff',
-              100: '#e0e7ff',
-              500: '#6366f1',
-              600: '#4f46e5',
-              700: '#4338ca',
-              900: '#1e1b4b',
-            }
-          }
+          fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+          colors: { brand: { 500: '#6366f1', 600: '#4f46e5' } }
         }
       }
     }
   </script>
+  
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      user-select: none;
-    }
+    body { font-family: 'Inter', sans-serif; user-select: none; overflow: hidden; }
     .grid-bg {
       background-size: 24px 24px;
-      background-image: 
-        linear-gradient(to right, rgba(148, 163, 184, 0.12) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+      background-image: linear-gradient(to right, rgba(51, 65, 85, 0.4) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(51, 65, 85, 0.4) 1px, transparent 1px);
     }
-    .dark .grid-bg {
-      background-image: 
-        linear-gradient(to right, rgba(51, 65, 85, 0.4) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(51, 65, 85, 0.4) 1px, transparent 1px);
-    }
-    .connector-line {
-      stroke-linecap: round;
-      transition: stroke-width 0.15s ease;
-    }
-    .connector-line:hover {
-      stroke-width: 4.5px !important;
-      cursor: pointer;
-    }
-    .pathway-line {
-      cursor: pointer;
-      transition: opacity 0.15s;
-    }
-    .pathway-line:hover {
-      opacity: 0.85;
-    }
-    .node-card {
-      transition: box-shadow 0.15s ease, transform 0.05s ease;
-    }
-    .node-card.selected {
-      outline: 2.5px solid #6366f1;
-      outline-offset: 2px;
-    }
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #94a3b8;
-      border-radius: 4px;
-    }
-    .dark ::-webkit-scrollbar-thumb {
-      background: #475569;
-    }
+    .connector-line { stroke-linecap: round; transition: stroke-width 0.15s ease; }
+    .connector-line:hover { stroke-width: 4.5px !important; cursor: pointer; }
+    .pathway-line { cursor: pointer; transition: opacity 0.15s; }
+    .pathway-line:hover { opacity: 0.85; }
+    .node-card { transition: box-shadow 0.15s ease, transform 0.05s ease; }
+    .node-card.selected { outline: 2.5px solid #6366f1; outline-offset: 2px; }
+    
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    
+    /* Edit in place input */
+    .edit-in-place { background: transparent; border: 1px dashed transparent; outline: none; }
+    .edit-in-place:hover, .edit-in-place:focus { border-color: #64748b; background: rgba(0,0,0,0.2); border-radius: 4px; }
+
+    /* Transitions for sidebars */
+    .sidebar-transition { transition: width 0.3s ease, min-width 0.3s ease, opacity 0.2s ease; }
+    .sidebar-collapsed { width: 0 !important; min-width: 0 !important; opacity: 0; overflow: hidden; border: none !important; }
   </style>
 </head>
 <body class="h-full bg-slate-900 text-slate-100 flex flex-col overflow-hidden">
 
-  <!-- Header / Barra Superior -->
-  <header class="h-14 border-b border-slate-800 bg-slate-950/80 backdrop-blur px-4 flex items-center justify-between shrink-0 z-20">
-    <div class="flex items-center space-x-3">
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500 via-indigo-500 to-sky-400 flex items-center justify-center shadow-lg shadow-amber-500/20 font-bold text-white text-base">
-        ☀️
-      </div>
-      <div>
-        <h1 class="text-sm font-semibold tracking-wide flex items-center gap-2">
-          TechDiagram Pro
-          <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">CCTV • Redes • Solar PV • BESS • IoT</span>
-        </h1>
-        <p class="text-[11px] text-slate-400">Diagramador de Sistemas Especializados, Energía Solar y Canalizaciones</p>
-      </div>
-    </div>
-
-    <!-- Barra de Herramientas Central -->
-    <div class="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 p-1 rounded-xl shadow-inner">
-      <button id="toolSelect" onclick="setInteractionMode('select')" title="Seleccionar y Mover (V)" class="p-1.5 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 bg-indigo-600 text-white transition">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/></svg>
-        <span>Mover</span>
+  <!-- HEADER & TOOLBAR PRINCIPAL -->
+  <header class="h-14 border-b border-slate-800 bg-slate-950 flex items-center justify-between px-3 shrink-0 z-20">
+    <!-- Izquierda: Toggle, Logo y Proyecto -->
+    <div class="flex items-center gap-3">
+      <button onclick="toggleSidebar('leftSidebar')" class="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition" title="Ocultar/Mostrar Librería">
+        <i data-lucide="panel-left" class="w-5 h-5"></i>
       </button>
 
-      <button id="toolConnect" onclick="setInteractionMode('connect')" title="Conectar Dispositivos / Cables (C)" class="p-1.5 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 text-slate-300 hover:bg-slate-800 transition">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-        <span>Cablear</span>
-      </button>
+      <div class="h-6 w-px bg-slate-800 mx-1"></div>
 
-      <button id="toolPathway" onclick="setInteractionMode('pathway')" title="Trazar Canalización / Tubería / Escalerilla (P)" class="p-1.5 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 text-slate-300 hover:bg-slate-800 transition">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-        <span>Canalización</span>
-      </button>
-
-      <div class="h-4 w-px bg-slate-800 mx-1"></div>
-
-      <!-- Selector de Tipo de Cable o Canalización -->
-      <div class="flex items-center gap-1.5 text-xs text-slate-300 pl-1">
-        <span class="text-[11px] text-slate-400" id="toolTypeLabel">Medio:</span>
-        <select id="cableTypeSelect" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-xs focus:ring-1 focus:ring-indigo-500 outline-none text-slate-200">
-          <optgroup label="Cables Solares & Potencia (NEC 690)">
-            <option value="pv_dc">Solar DC 1500V H1Z2Z2-K (6mm²)</option>
-            <option value="pv_ground">Tierra Solar / Bajante (16mm²)</option>
-            <option value="ac_power">AC 120/240V/480V (Potencia)</option>
-          </optgroup>
-          <optgroup label="Cables de Red y Telecomunicaciones">
-            <option value="poe">Cat6 / PoE+ (Red IP)</option>
-            <option value="fiber">Fibra Óptica OM3/OS2 (Troncal)</option>
-            <option value="wiegand">Wiegand / RS-485 Blindado</option>
-            <option value="wireless">Inalámbrico / Wi-Fi / LoRa</option>
-          </optgroup>
-          <optgroup label="Canalizaciones (Norma TIA-569 / NEC)">
-            <option value="conduit_emt_34">Tubería EMT 3/4" (Metálica)</option>
-            <option value="conduit_emt_1">Tubería EMT 1" (Troncal)</option>
-            <option value="conduit_pvc_1">Tubería PVC Pesado 1" (Subterráneo)</option>
-            <option value="tray_mesh_150">Escalerilla Malla 150mm</option>
-            <option value="tray_ladder_300">Escalerilla Tipo Escalera 300mm</option>
-          </optgroup>
-        </select>
-      </div>
-
-      <div class="h-4 w-px bg-slate-800 mx-1"></div>
-
-      <!-- Gestión de Plano de Fondo y Escala -->
-      <label class="p-1.5 px-2.5 rounded-lg text-xs font-medium flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer transition" title="Subir plano de arquitectura (PDF, JPG, PNG, SVG)">
-        <span>📐 Subir Plano</span>
-        <input type="file" id="floorPlanInput" accept="image/*,application/pdf" class="hidden" onchange="handleFloorPlanUpload(event)">
+      <!-- Upload Logo de Empresa -->
+      <label class="cursor-pointer group flex items-center justify-center w-8 h-8 rounded-lg bg-slate-900 border border-slate-700 hover:border-indigo-500 transition relative overflow-hidden" title="Subir Logo de la Empresa">
+        <img id="projectLogoImg" class="absolute inset-0 w-full h-full object-contain hidden bg-white">
+        <i data-lucide="image-plus" id="projectLogoIcon" class="w-4 h-4 text-slate-500 group-hover:text-indigo-400"></i>
+        <input type="file" accept="image/*" class="hidden" onchange="handleLogoUpload(event)">
       </label>
 
-      <button id="btnCalibrateScale" onclick="startScaleCalibration()" class="p-1.5 px-2 rounded-lg text-xs font-medium text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition flex items-center gap-1" title="Calibrar Escala (clic en 2 puntos con distancia conocida)">
-        <span>📏</span>
+      <!-- Nombre del Proyecto Editable -->
+      <div class="flex flex-col">
+        <input type="text" id="projectName" value="Proyecto de Ingeniería 01" class="edit-in-place text-sm font-semibold text-slate-100 px-1 w-64 truncate" onchange="updateProjectName()">
+        <span class="text-[10px] text-slate-400 px-1">TechDiagram Pro • OLT/GPON/Solar/CCTV</span>
+      </div>
+    </div>
+
+    <!-- Centro: Herramientas de Dibujo -->
+    <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 p-1 rounded-xl shadow-inner">
+      <button id="toolSelect" onclick="setMode('select')" title="Seleccionar (V)" class="p-1.5 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 bg-indigo-600 text-white transition">
+        <i data-lucide="mouse-pointer-2" class="w-4 h-4"></i> Mover
+      </button>
+      <button id="toolConnect" onclick="setMode('connect')" title="Cablear Multipunto (C)" class="p-1.5 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 text-slate-300 hover:bg-slate-800 transition">
+        <i data-lucide="cable" class="w-4 h-4"></i> Cablear
+      </button>
+      <button id="toolPathway" onclick="setMode('pathway')" title="Canalización Multipunto (P)" class="p-1.5 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 text-slate-300 hover:bg-slate-800 transition">
+        <i data-lucide="route" class="w-4 h-4"></i> Canalización
+      </button>
+
+      <div class="h-4 w-px bg-slate-800 mx-1"></div>
+
+      <!-- Selector de Medios (Tipos de Cable/Tubo) -->
+      <select id="cableTypeSelect" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500 outline-none text-slate-200 w-48">
+        <optgroup label="Fibra Óptica / GPON">
+          <option value="fiber_drop">Fibra Drop Acometida (1 Hilo)</option>
+          <option value="fiber_trunk">Fibra Óptica Troncal (OM3/OS2)</option>
+          <option value="fiber_fttr">Fibra Transparente FTTR</option>
+        </optgroup>
+        <optgroup label="Cables de Red y Datos">
+          <option value="poe">Cat6 / Cat6A (PoE+)</option>
+          <option value="wiegand">Multipar Blindado (Wiegand/RS485)</option>
+          <option value="wireless">Enlace Inalámbrico (RF/Wi-Fi/LoRa)</option>
+        </optgroup>
+        <optgroup label="Potencia y Solar (NEC 690)">
+          <option value="pv_dc">Solar DC 1500V H1Z2Z2-K (6mm²)</option>
+          <option value="pv_ground">Tierra Física / Bajante (16mm²)</option>
+          <option value="ac_power">Potencia AC (F+N+T)</option>
+        </optgroup>
+        <optgroup label="Canalizaciones (TIA-569 / NEC)">
+          <option value="conduit_emt_34">Tubería EMT 3/4"</option>
+          <option value="conduit_emt_1">Tubería EMT 1"</option>
+          <option value="conduit_pvc_1">Tubería PVC Pesado 1"</option>
+          <option value="tray_mesh_150">Bandeja Malla 150mm</option>
+          <option value="microduct">Microducto Fibra (HDPE)</option>
+        </optgroup>
+      </select>
+
+      <div class="h-4 w-px bg-slate-800 mx-1"></div>
+
+      <label class="p-1.5 px-2 rounded-lg text-xs font-medium flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer transition" title="Subir plano en PDF, PNG o JPG">
+        <i data-lucide="map" class="w-4 h-4"></i> Plano
+        <input type="file" accept="image/*,.pdf" class="hidden" onchange="handlePlanUpload(event)">
+      </label>
+
+      <button onclick="startScaleCalibration()" class="p-1.5 px-2 rounded-lg text-xs font-medium text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 transition flex items-center gap-1.5" title="Calibrar Escala">
+        <i data-lucide="ruler" class="w-4 h-4"></i>
         <span id="scaleLabelText">1m = 20px</span>
-      </button>
-
-      <div class="h-4 w-px bg-slate-800 mx-1"></div>
-
-      <!-- Asistente de Cálculo Solar Rápido -->
-      <button onclick="openPvCalculatorModal()" class="p-1.5 px-2.5 rounded-lg text-xs font-semibold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 flex items-center gap-1.5 transition" title="Cálculos Fotovoltaicos (Voc máx, MPPT, Corrientes NEC 690 y Generación)">
-        <span>⚡</span>
-        <span>Cálculo Solar</span>
-      </button>
-
-      <div class="h-4 w-px bg-slate-800 mx-1"></div>
-
-      <!-- Controles Zoom y Rejilla -->
-      <button onclick="zoomCanvas(0.1)" title="Zoom +" class="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-      </button>
-      <span id="zoomLevelText" class="text-[11px] font-mono text-slate-400 w-10 text-center">100%</span>
-      <button onclick="zoomCanvas(-0.1)" title="Zoom -" class="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
-      </button>
-      <button onclick="resetZoom()" title="Restablecer Vista" class="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition text-xs font-mono">
-        1:1
-      </button>
-      <button id="gridToggleBtn" onclick="toggleGrid()" title="Activar/Desactivar Rejilla" class="p-1.5 hover:bg-slate-800 rounded text-indigo-400 transition text-xs font-mono px-2">
-        # Snap
       </button>
     </div>
 
-    <!-- Botones de Acción (Plantillas, BOM, Exportar) -->
+    <!-- Derecha: Acciones, BOM y Proyectos -->
     <div class="flex items-center gap-2">
-      
-      <!-- Gestor de Proyectos Local -->
-      <button onclick="openProjectManager()" class="px-2.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg flex items-center gap-1.5 transition text-slate-200">
-        <span>📁 Mis Proyectos</span>
+      <button onclick="openPvCalculatorModal()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 flex items-center gap-1.5 transition">
+        <i data-lucide="sun" class="w-4 h-4"></i> Solar NEC
       </button>
       
-      <button onclick="saveCurrentProjectPrompt()" class="px-2.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg flex items-center gap-1.5 transition text-slate-200">
-        <span>💾 Guardar</span>
-      </button>
-
-      <!-- Botón Manual de Usuario -->
-      <button onclick="openUserManualModal()" class="px-2.5 py-1.5 text-xs font-bold bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-600/30 rounded-lg flex items-center gap-1.5 transition" title="Ver Guía de Uso Rápido">
-        <span>📖</span> Manual de Uso
-      </button>
-
-      <!-- Selector de Plantilla -->
-      <div class="relative">
-        <button onclick="toggleDropdown('templatesDropdown')" class="px-2.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg flex items-center gap-1.5 transition">
-          <span>Plantillas</span>
-          <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </button>
-        <div id="templatesDropdown" class="hidden absolute right-0 mt-2 w-72 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-1.5 z-50 text-xs">
-          <div class="text-[10px] text-slate-400 uppercase font-semibold px-2 py-1">Plantillas de Ingeniería</div>
-          <button onclick="loadTemplate('pv_commercial'); toggleDropdown('templatesDropdown')" class="w-full text-left px-2.5 py-2 hover:bg-slate-800 rounded-lg flex flex-col gap-0.5">
-            <span class="font-medium text-amber-300">☀️ Planta Solar Comercial (15 kWp + Inversor)</span>
-            <span class="text-[10px] text-slate-400">Strings en serie, Combiner Box, DPS y Medidor</span>
-          </button>
-          <button onclick="loadTemplate('bess_pv'); toggleDropdown('templatesDropdown')" class="w-full text-left px-2.5 py-2 hover:bg-slate-800 rounded-lg flex flex-col gap-0.5">
-            <span class="font-medium text-emerald-300">🔋 Fotovoltaico Híbrido con BESS (Respaldo)</span>
-            <span class="text-[10px] text-slate-400">Paneles PV, Inversor Híbrido, Baterías LiFePO4</span>
-          </button>
-          <button onclick="loadTemplate('cctv_acs'); toggleDropdown('templatesDropdown')" class="w-full text-left px-2.5 py-2 hover:bg-slate-800 rounded-lg flex flex-col gap-0.5">
-            <span class="font-medium text-sky-300">📹 CCTV & Control de Acceso</span>
-            <span class="text-[10px] text-slate-400">NVR, Cámaras PoE, Lectoras y Maglock</span>
-          </button>
-          <button onclick="loadTemplate('iot_net'); toggleDropdown('templatesDropdown')" class="w-full text-left px-2.5 py-2 hover:bg-slate-800 rounded-lg flex flex-col gap-0.5">
-            <span class="font-medium text-indigo-300">🌐 Red IT & Puerta de Enlace IoT</span>
-            <span class="text-[10px] text-slate-400">Core Switch, APs, Gateways y Sensores</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Botón Cómputo de Materiales (BOM) -->
       <button onclick="openBomModal()" class="px-2.5 py-1.5 text-xs font-medium bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-600/30 rounded-lg flex items-center gap-1.5 transition">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-        <span>Listado Materiales (BOM)</span>
+        <i data-lucide="table-2" class="w-4 h-4"></i> BOM / Metrado
       </button>
 
-      <!-- Botón Exportar -->
-      <div class="relative">
-        <button onclick="toggleDropdown('exportDropdown')" class="px-3 py-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 rounded-lg flex items-center gap-1.5 shadow-md shadow-indigo-600/20 transition">
-          <span>Exportar</span>
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </button>
-        <div id="exportDropdown" class="hidden absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-1 z-50 text-xs">
-          <button onclick="exportProjectJSON(); toggleDropdown('exportDropdown')" class="w-full text-left px-3 py-2 hover:bg-slate-800 rounded-lg flex items-center gap-2">
-            <span>💾</span> Descargar (JSON)
-          </button>
-          <label class="w-full text-left px-3 py-2 hover:bg-slate-800 rounded-lg flex items-center gap-2 cursor-pointer">
-            <span>📂</span> Cargar (JSON)
-            <input type="file" id="importJsonInput" accept=".json" class="hidden" onchange="importProjectJSON(event)">
-          </label>
-          <div class="h-px bg-slate-800 my-1"></div>
-          <button onclick="exportDiagramSVG(); toggleDropdown('exportDropdown')" class="w-full text-left px-3 py-2 hover:bg-slate-800 rounded-lg flex items-center gap-2">
-            <span>📐</span> Exportar Imagen SVG
-          </button>
-          <button onclick="clearCanvas(); toggleDropdown('exportDropdown')" class="w-full text-left px-3 py-2 hover:bg-red-500/20 text-red-400 rounded-lg flex items-center gap-2">
-            <span>🗑️</span> Limpiar Lienzo
-          </button>
-        </div>
-      </div>
+      <button onclick="openProjectManager()" class="px-2.5 py-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg flex items-center gap-1.5 transition shadow-lg shadow-indigo-600/20">
+        <i data-lucide="folder-open" class="w-4 h-4"></i> Proyectos
+      </button>
+
+      <div class="h-6 w-px bg-slate-800 mx-1"></div>
+
+      <button onclick="toggleSidebar('rightSidebar')" class="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition" title="Ocultar/Mostrar Inspector">
+        <i data-lucide="panel-right" class="w-5 h-5"></i>
+      </button>
     </div>
   </header>
 
-  <!-- Contenedor Principal: Biblioteca Lateral + Canvas + Inspector -->
+  <!-- CONTENEDOR PRINCIPAL: LIBRERÍA + LIENZO + INSPECTOR -->
   <div class="flex-1 flex overflow-hidden relative">
 
-    <!-- BARRA LATERAL IZQUIERDA: PALETA DE COMPONENTES -->
-    <aside class="w-80 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0 z-10">
+    <!-- LIBRERÍA IZQUIERDA -->
+    <aside id="leftSidebar" class="w-80 sidebar-transition flex flex-col shrink-0 bg-slate-950 border-r border-slate-800 z-10">
       <div class="p-3 border-b border-slate-800">
         <div class="relative">
-          <input type="text" id="searchComponent" onkeyup="filterComponents()" placeholder="Buscar equipo (panel, inversor, CCTV, switch...)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 pl-8 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
-          <svg class="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-2.5 top-2.5"></i>
+          <input type="text" id="searchComp" onkeyup="filterLibrary()" placeholder="Buscar ZTE, GPON, Solar..." class="w-full bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 outline-none focus:border-indigo-500">
         </div>
       </div>
-
-      <!-- Categorías de Dispositivos Acordeón -->
-      <div class="flex-1 overflow-y-auto p-2 space-y-3" id="componentLibraryList">
-
-        <!-- 1. ENERGÍA SOLAR FOTOVOLTAICA (COMPLETA Y ESPECIALIZADA) -->
-        <div class="category-block">
-          <div class="flex items-center justify-between text-[11px] font-bold text-amber-400 uppercase tracking-wider px-2 py-1 bg-amber-950/40 rounded border border-amber-900/40">
-            <span>☀️ Fotovoltaico & Paneles Solares</span>
-            <span class="text-[9px] bg-amber-900/60 px-1 rounded text-amber-200">DC / MPPT</span>
-          </div>
-          <div class="grid grid-cols-2 gap-1.5 mt-1.5">
-            <button onclick="addNodeToCanvas('pv_module_580')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🪟</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Panel Solar 580W</span>
-              <span class="text-[9px] text-amber-400 font-mono">TOPCon Bifacial</span>
-            </button>
-            <button onclick="addNodeToCanvas('pv_string')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">☀️</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">String Solar (10 Mod)</span>
-              <span class="text-[9px] text-amber-400 font-mono">5.8 kWp • 500V DC</span>
-            </button>
-            <button onclick="addNodeToCanvas('pv_inverter_string')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">⚡</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Inversor String On-Grid</span>
-              <span class="text-[9px] text-amber-400 font-mono">10kW • Dual MPPT</span>
-            </button>
-            <button onclick="addNodeToCanvas('pv_inverter')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🔄</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Inversor Híbrido BESS</span>
-              <span class="text-[9px] text-amber-400 font-mono">6kW MPPT/Batería</span>
-            </button>
-            <button onclick="addNodeToCanvas('pv_microinverter')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🔲</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Microinversor 4-en-1</span>
-              <span class="text-[9px] text-amber-400 font-mono">2000W AC • Rapid Off</span>
-            </button>
-            <button onclick="addNodeToCanvas('pv_combiner_box')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🧰</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Combiner Box DC 4-in</span>
-              <span class="text-[9px] text-amber-400 font-mono">Fusibles gPV + DPS</span>
-            </button>
-            <button onclick="addNodeToCanvas('pv_dc_disconnect')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🛑</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Seccionador DC 1000V</span>
-              <span class="text-[9px] text-amber-400 font-mono">Corte Carga 32A</span>
-            </button>
-            <button onclick="addNodeToCanvas('pv_spd_ground')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">⚡</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Supresor DPS & Tierra</span>
-              <span class="text-[9px] text-amber-400 font-mono">Tipo II 1000V DC</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 2. ALMACENAMIENTO BESS & TABLEROS ELÉCTRICOS -->
-        <div class="category-block">
-          <div class="flex items-center justify-between text-[11px] font-bold text-emerald-400 uppercase tracking-wider px-2 py-1 bg-emerald-950/30 rounded border border-emerald-900/30">
-            <span>🔋 Almacenamiento BESS & Tableros</span>
-            <span class="text-[9px] bg-emerald-900/50 px-1 rounded text-emerald-300">LiFePO4 / AC</span>
-          </div>
-          <div class="grid grid-cols-2 gap-1.5 mt-1.5">
-            <button onclick="addNodeToCanvas('bess_battery')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🔋</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">BESS Rack LiFePO4</span>
-              <span class="text-[9px] text-emerald-400 font-mono">5.12 kWh / 48V</span>
-            </button>
-            <button onclick="addNodeToCanvas('bess_commercial_cabinet')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🗄️</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Gabinete BESS 30kWh</span>
-              <span class="text-[9px] text-emerald-400 font-mono">Industrial HV / BMS</span>
-            </button>
-            <button onclick="addNodeToCanvas('elec_panel')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🔌</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Tablero AC / ATS</span>
-              <span class="text-[9px] text-slate-400 font-mono">120/240V Cargas</span>
-            </button>
-            <button onclick="addNodeToCanvas('iot_smart_meter')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">📊</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Medidor Bidireccional</span>
-              <span class="text-[9px] text-purple-400 font-mono">Zero Export / RS-485</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 3. CCTV & SEGURIDAD ELECTRÓNICA -->
-        <div class="category-block">
-          <div class="flex items-center justify-between text-[11px] font-bold text-sky-400 uppercase tracking-wider px-2 py-1 bg-sky-950/30 rounded border border-sky-900/30">
-            <span>📹 CCTV & Videovigilancia</span>
-            <span class="text-[9px] bg-sky-900/50 px-1 rounded text-sky-300">PoE / IP</span>
-          </div>
-          <div class="grid grid-cols-2 gap-1.5 mt-1.5">
-            <button onclick="addNodeToCanvas('cam_dome')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🎥</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Cámara Domo IP</span>
-              <span class="text-[9px] text-slate-400 font-mono">7W PoE</span>
-            </button>
-            <button onclick="addNodeToCanvas('cam_bullet')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">📹</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Cámara Bullet 4K</span>
-              <span class="text-[9px] text-slate-400 font-mono">9W PoE</span>
-            </button>
-            <button onclick="addNodeToCanvas('cam_ptz')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🛰️</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Cámara PTZ 360°</span>
-              <span class="text-[9px] text-slate-400 font-mono">25W Hi-PoE</span>
-            </button>
-            <button onclick="addNodeToCanvas('nvr_server')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🗄️</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">NVR / VMS 32Ch</span>
-              <span class="text-[9px] text-slate-400 font-mono">110V/220V AC</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 4. CONTROL DE ACCESO -->
-        <div class="category-block">
-          <div class="flex items-center justify-between text-[11px] font-bold text-teal-400 uppercase tracking-wider px-2 py-1 bg-teal-950/30 rounded border border-teal-900/30">
-            <span>🚪 Control de Acceso</span>
-            <span class="text-[9px] bg-teal-900/50 px-1 rounded text-teal-300">Wiegand/IP</span>
-          </div>
-          <div class="grid grid-cols-2 gap-1.5 mt-1.5">
-            <button onclick="addNodeToCanvas('acs_panel')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-teal-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🎛️</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Panel Acceso 4P</span>
-              <span class="text-[9px] text-slate-400 font-mono">12V DC / Red</span>
-            </button>
-            <button onclick="addNodeToCanvas('acs_reader')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-teal-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">💳</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Lectora RFID/Bio</span>
-              <span class="text-[9px] text-slate-400 font-mono">Wiegand/OSDP</span>
-            </button>
-            <button onclick="addNodeToCanvas('acs_maglock')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-teal-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🧲</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Electroimán 600lb</span>
-              <span class="text-[9px] text-slate-400 font-mono">12V 500mA</span>
-            </button>
-            <button onclick="addNodeToCanvas('acs_rex')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-teal-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🔘</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Botón REX Salida</span>
-              <span class="text-[9px] text-slate-400 font-mono">Contacto Seco</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 5. REDES & TELECOMUNICACIONES -->
-        <div class="category-block">
-          <div class="flex items-center justify-between text-[11px] font-bold text-indigo-400 uppercase tracking-wider px-2 py-1 bg-indigo-950/30 rounded border border-indigo-900/30">
-            <span>🌐 Redes & Telecom</span>
-            <span class="text-[9px] bg-indigo-900/50 px-1 rounded text-indigo-300">Gigabit / PoE</span>
-          </div>
-          <div class="grid grid-cols-2 gap-1.5 mt-1.5">
-            <button onclick="addNodeToCanvas('net_switch_poe')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🔀</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Switch 24P PoE+</span>
-              <span class="text-[9px] text-indigo-400 font-mono">Budget 370W</span>
-            </button>
-            <button onclick="addNodeToCanvas('net_router')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🛡️</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Router Firewall</span>
-              <span class="text-[9px] text-slate-400 font-mono">Dual-WAN</span>
-            </button>
-            <button onclick="addNodeToCanvas('net_ap')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">📶</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Access Point Wi-Fi 6</span>
-              <span class="text-[9px] text-slate-400 font-mono">13W PoE</span>
-            </button>
-            <button onclick="addNodeToCanvas('net_rack')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🚪</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Gabinete Rack 24U</span>
-              <span class="text-[9px] text-slate-400 font-mono">Estructura IT</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 6. IOT & SENSORES -->
-        <div class="category-block">
-          <div class="flex items-center justify-between text-[11px] font-bold text-purple-400 uppercase tracking-wider px-2 py-1 bg-purple-950/30 rounded border border-purple-900/30">
-            <span>📡 IoT & Sensores</span>
-            <span class="text-[9px] bg-purple-900/50 px-1 rounded text-purple-300">LoRa/MQTT</span>
-          </div>
-          <div class="grid grid-cols-2 gap-1.5 mt-1.5">
-            <button onclick="addNodeToCanvas('iot_gateway')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-purple-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🛰️</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Gateway LoRaWAN</span>
-              <span class="text-[9px] text-slate-400 font-mono">PoE / 915MHz</span>
-            </button>
-            <button onclick="addNodeToCanvas('iot_sensor')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-purple-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🌡️</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Sensor Temp/Hum</span>
-              <span class="text-[9px] text-slate-400 font-mono">Batería Li-Ion</span>
-            </button>
-            <button onclick="addNodeToCanvas('iot_plc')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-purple-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">⚙️</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">PLC / RTU Industrial</span>
-              <span class="text-[9px] text-slate-400 font-mono">24V DC / Modbus</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 7. CANALIZACIONES Y CAJAS (TIA-569 / NEC) -->
-        <div class="category-block">
-          <div class="flex items-center justify-between text-[11px] font-bold text-cyan-400 uppercase tracking-wider px-2 py-1 bg-cyan-950/30 rounded border border-cyan-900/30">
-            <span>🏗️ Cajas & Pasos de Canalización</span>
-            <span class="text-[9px] bg-cyan-900/50 px-1 rounded text-cyan-300">Norma TIA-569</span>
-          </div>
-          <div class="grid grid-cols-2 gap-1.5 mt-1.5">
-            <button onclick="addNodeToCanvas('box_junction_4x4')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">📦</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Caja Paso 4"x4"</span>
-              <span class="text-[9px] text-slate-400 font-mono">Con Tapa Ciega</span>
-            </button>
-            <button onclick="addNodeToCanvas('box_pull_nema')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🗃️</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Registro NEMA 12x12"</span>
-              <span class="text-[9px] text-slate-400 font-mono">Caja de Halado</span>
-            </button>
-            <button onclick="addNodeToCanvas('condulet_tee')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🪜</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Condulet Tipo T / LB</span>
-              <span class="text-[9px] text-slate-400 font-mono">Aluminio 3/4"</span>
-            </button>
-            <button onclick="addNodeToCanvas('box_chalupa')" class="comp-btn flex flex-col items-center justify-center p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/50 transition group">
-              <span class="text-xl mb-1 group-hover:scale-110 transition">🔲</span>
-              <span class="text-[11px] font-medium text-slate-300 text-center">Caja 2x4" (Chalupa)</span>
-              <span class="text-[9px] text-slate-400 font-mono">Para Placa/Faceplate</span>
-            </button>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Métricas y Resumen en Vivo -->
-      <div class="p-3 border-t border-slate-800 bg-slate-900/60 text-[11px] space-y-1.5">
-        <div class="text-[10px] text-slate-400 font-semibold uppercase flex items-center justify-between">
-          <span>Balance & Metrado</span>
-          <span class="text-amber-400 flex items-center gap-1">⚡ Sistema Híbrido</span>
-        </div>
-        <div class="flex justify-between items-center text-slate-300">
-          <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-400"></span>Potencia Solar Pico:</span>
-          <span id="metricPvTotal" class="font-mono font-semibold text-amber-400">0 kWp</span>
-        </div>
-        <div class="flex justify-between items-center text-slate-300">
-          <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-300"></span>Generación Estimada:</span>
-          <span id="metricPvDaily" class="font-mono font-semibold text-amber-300">0 kWh/día</span>
-        </div>
-        <div class="flex justify-between items-center text-slate-300">
-          <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>Capacidad BESS:</span>
-          <span id="metricBessTotal" class="font-mono font-semibold text-emerald-400">0 kWh</span>
-        </div>
-        <div class="flex justify-between items-center text-slate-300">
-          <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-sky-400"></span>Consumo PoE IT:</span>
-          <span id="metricPoeTotal" class="font-mono font-semibold text-sky-400">0 W</span>
-        </div>
-        <div class="flex justify-between items-center text-slate-300 pt-1 border-t border-slate-800/80">
-          <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-cyan-400"></span>Canalizaciones:</span>
-          <span id="metricPathwaysTotal" class="font-mono font-semibold text-cyan-400">0 m</span>
-        </div>
+      
+      <div class="flex-1 overflow-y-auto p-2 space-y-3 pb-20" id="libraryContainer">
+        <!-- Renderizado vía JS -->
       </div>
     </aside>
 
-    <!-- ÁREA CENTRAL: LIENZO (CANVAS DE DIBUJO) -->
+    <!-- LIENZO CENTRAL (CANVAS) -->
     <main class="flex-1 relative overflow-hidden bg-slate-900 grid-bg" id="canvasContainer">
-
-      <!-- Contenedor transformable (Paneo y Zoom) -->
-      <div id="canvasViewport" class="absolute inset-0 origin-top-left" style="transform: translate(0px, 0px) scale(1);">
-
-        <!-- Imagen de Plano de Fondo (Subido por el usuario) -->
+      <div id="canvasViewport" class="absolute inset-0 origin-top-left" style="transform: translate(40px,40px) scale(1);">
+        
+        <!-- Plano de Fondo -->
         <div id="floorPlanWrapper" class="absolute left-0 top-0 pointer-events-none select-none z-0 hidden">
-          <img id="floorPlanImg" class="max-w-none opacity-40" alt="Plano Arquitectónico">
+          <canvas id="pdfCanvas" class="hidden"></canvas>
+          <img id="floorPlanImg" class="max-w-none opacity-40">
         </div>
 
-        <!-- SVG de Conexiones de Cables y Canalizaciones -->
-        <svg id="connectionsSvg" class="absolute inset-0 w-[5000px] h-[5000px] pointer-events-none z-0">
+        <!-- Capa SVG (Rutas) -->
+        <svg id="connectionsSvg" class="absolute inset-0 w-[8000px] h-[8000px] pointer-events-none z-0">
           <defs>
-            <!-- Marcadores de Flechas y Extremos -->
-            <marker id="arrow-poe" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-              <path d="M0,0 L0,6 L6,3 z" fill="#38bdf8"/>
-            </marker>
-            <marker id="arrow-pv" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-              <path d="M0,0 L0,6 L6,3 z" fill="#f59e0b"/>
-            </marker>
-            <marker id="arrow-pv-ground" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-              <path d="M0,0 L0,6 L6,3 z" fill="#84cc16"/>
-            </marker>
-            <marker id="arrow-ac" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-              <path d="M0,0 L0,6 L6,3 z" fill="#ef4444"/>
-            </marker>
-            <marker id="arrow-wiegand" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-              <path d="M0,0 L0,6 L6,3 z" fill="#10b981"/>
-            </marker>
-            <marker id="arrow-fiber" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-              <path d="M0,0 L0,6 L6,3 z" fill="#ec4899"/>
-            </marker>
-            <!-- Patrón de Escalerilla / Bandeja Portacables -->
             <pattern id="trayPattern" width="16" height="16" patternUnits="userSpaceOnUse">
               <line x1="0" y1="0" x2="16" y2="0" stroke="#0891b2" stroke-width="2"/>
               <line x1="0" y1="16" x2="16" y2="16" stroke="#0891b2" stroke-width="2"/>
               <line x1="8" y1="0" x2="8" y2="16" stroke="#22d3ee" stroke-width="2"/>
             </pattern>
           </defs>
-
-          <!-- Capa de Canalizaciones (Tuberías y Escalerillas) -->
           <g id="pathwaysLayer"></g>
-
-          <!-- Capa de Cables y Conexiones Eléctricas/Datos -->
           <g id="connectionsLayer"></g>
-
-          <!-- Línea fantasma temporal durante el trazado -->
-          <line id="tempCableLine" x1="0" y1="0" x2="0" y2="0" stroke="#6366f1" stroke-width="2.5" stroke-dasharray="4,4" class="hidden"/>
-          <!-- Línea de calibración -->
-          <line id="calibrationLine" x1="0" y1="0" x2="0" y2="0" stroke="#f59e0b" stroke-width="3" stroke-dasharray="6,4" class="hidden"/>
+          <!-- Líneas de trazado temporal -->
+          <polyline id="tempRouteLine" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-dasharray="6,4" class="hidden pointer-events-none"/>
+          <line id="calibrationLine" fill="none" stroke="#f59e0b" stroke-width="3" stroke-dasharray="6,4" class="hidden pointer-events-none"/>
         </svg>
 
-        <!-- Capa de Nodos / Equipos -->
-        <div id="nodesLayer" class="absolute inset-0 w-[5000px] h-[5000px] z-10 pointer-events-auto"></div>
-
+        <!-- Capa Nodos HTML -->
+        <div id="nodesLayer" class="absolute inset-0 w-[8000px] h-[8000px] z-10 pointer-events-auto"></div>
       </div>
 
-      <!-- Barra flotante de Controles de Plano (Visible si hay plano cargado) -->
-      <div id="planControlBar" class="hidden absolute top-4 left-4 bg-slate-950/90 backdrop-blur border border-slate-800 rounded-xl p-2 flex items-center gap-3 text-xs z-20 text-slate-300 shadow-xl">
-        <span class="font-medium text-slate-200 flex items-center gap-1.5">
-          <span>📐</span> Plano Activo
-        </span>
-        <div class="flex items-center gap-1.5 text-[11px] text-slate-400">
-          <span>Opacidad:</span>
-          <input type="range" id="planOpacityRange" min="5" max="100" value="40" oninput="changePlanOpacity(this.value)" class="w-20 accent-indigo-500 cursor-pointer">
+      <!-- Controles flotantes Canvas -->
+      <div class="absolute bottom-4 left-4 flex flex-col gap-2 z-10">
+        <div class="bg-slate-950/80 backdrop-blur border border-slate-800 rounded-lg p-1.5 text-xs flex gap-1 shadow-xl">
+          <button onclick="zoomCanvas(0.1)" class="p-1 hover:bg-slate-800 rounded text-slate-400"><i data-lucide="zoom-in" class="w-4 h-4"></i></button>
+          <span id="zoomText" class="w-12 text-center font-mono flex items-center justify-center text-slate-300">100%</span>
+          <button onclick="zoomCanvas(-0.1)" class="p-1 hover:bg-slate-800 rounded text-slate-400"><i data-lucide="zoom-out" class="w-4 h-4"></i></button>
+          <button onclick="resetZoom()" class="p-1 hover:bg-slate-800 rounded text-slate-400 font-mono text-[10px]">1:1</button>
         </div>
-        <button onclick="togglePlanVisibility()" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px]">
-          Ocultar/Ver
-        </button>
-        <button onclick="removeFloorPlan()" class="px-2 py-0.5 rounded bg-red-500/20 hover:bg-red-500/30 text-red-300 text-[10px]">
-          Quitar
-        </button>
+        <div id="modeStatusBox" class="bg-slate-950/80 backdrop-blur border border-slate-800 rounded-lg px-3 py-2 text-xs text-indigo-400 font-medium flex items-center gap-2 shadow-xl">
+          <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> <span>Modo: Mover y Seleccionar</span>
+        </div>
       </div>
 
-      <!-- Indicador de modo en la esquina inferior izquierda -->
-      <div class="absolute bottom-4 left-4 bg-slate-950/80 backdrop-blur border border-slate-800 rounded-lg px-3 py-1.5 flex items-center gap-2 text-xs z-10 text-slate-300">
-        <span id="modeStatusDot" class="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse"></span>
-        <span id="modeStatusText">Modo: Mover y Seleccionar</span>
-        <span class="text-slate-500 text-[10px] pl-2 border-l border-slate-800">Usa Clic Izq para mover nodos o conectar</span>
+      <!-- Controles de Opacidad del Plano -->
+      <div id="planControlBar" class="hidden absolute top-4 left-4 bg-slate-950/90 backdrop-blur border border-slate-800 rounded-xl p-2 flex flex-col gap-2 z-20 shadow-xl">
+        <div class="text-[10px] font-bold text-slate-400 uppercase flex justify-between items-center">
+          <span>Plano de Fondo</span>
+          <button onclick="removeFloorPlan()" class="text-red-400 hover:text-red-300"><i data-lucide="x" class="w-3 h-3"></i></button>
+        </div>
+        <div class="flex items-center gap-2">
+          <i data-lucide="eye" class="w-4 h-4 text-slate-400"></i>
+          <input type="range" min="5" max="100" value="40" oninput="changePlanOpacity(this.value)" class="w-24 accent-indigo-500">
+        </div>
       </div>
-
     </main>
 
-    <!-- BARRA LATERAL DERECHA: INSPECTOR DE PROPIEDADES -->
-    <aside id="inspectorPanel" class="w-80 bg-slate-950 border-l border-slate-800 flex flex-col shrink-0 z-10">
-      <div class="p-3.5 border-b border-slate-800 flex items-center gap-2">
-        <span class="text-base" id="inspIcon">⚙️</span>
-        <div>
-          <h2 class="text-sm font-bold text-slate-200" id="inspTitle">Propiedades</h2>
-          <p class="text-[10px] text-slate-400" id="inspSubtitle">Selecciona un equipo o cable</p>
+    <!-- INSPECTOR DERECHO -->
+    <aside id="rightSidebar" class="w-84 sidebar-transition flex flex-col shrink-0 bg-slate-950 border-l border-slate-800 z-10">
+      <div class="p-3.5 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="sliders-horizontal" class="w-5 h-5 text-slate-400" id="inspIcon"></i>
+          <div>
+            <h2 class="text-xs font-semibold text-slate-100" id="inspTitle">Propiedades</h2>
+            <p class="text-[10px] text-slate-400" id="inspSubtitle">Selecciona un elemento</p>
+          </div>
+        </div>
+        <div class="flex gap-1">
+          <button id="btnDuplicate" onclick="duplicateSelected()" title="Duplicar Equipo" class="hidden p-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 transition">
+            <i data-lucide="copy" class="w-4 h-4"></i>
+          </button>
+          <button id="btnDelete" onclick="deleteSelected()" title="Eliminar (Supr)" class="hidden p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
         </div>
       </div>
-      <div class="flex-1 overflow-y-auto p-3 space-y-4" id="inspectorBody">
+
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 text-xs" id="inspectorBody">
         <div class="text-center py-12 text-slate-500">
-          <svg class="w-10 h-10 mx-auto mb-2 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/></svg>
+          <i data-lucide="mouse-pointer-click" class="w-10 h-10 mx-auto mb-2 opacity-50"></i>
           <p class="font-medium text-slate-400">Sin Selección</p>
-          <p class="text-[11px] mt-1 max-w-[200px] mx-auto">Haz clic en cualquier panel solar, inversor, switch o tubería para configurar sus parámetros.</p>
+          <p class="text-[10px] mt-1 text-slate-500">Haz clic en un equipo, cable o canalización.</p>
         </div>
       </div>
-      <div class="p-3 border-t border-slate-800 hidden" id="deleteSelectedBtnContainer">
-        <button id="deleteSelectedBtn" onclick="deleteSelected()" class="w-full py-2 bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded-lg text-xs font-bold transition">Eliminar Seleccionado</button>
+
+      <!-- Live Metrics Dashboard -->
+      <div class="p-3 border-t border-slate-800 bg-slate-900/60 text-[11px] space-y-1.5">
+        <div class="text-[10px] text-slate-400 font-semibold uppercase mb-1">Balance del Proyecto</div>
+        <div class="flex justify-between text-slate-300"><span class="flex items-center gap-1.5 text-amber-400"><i data-lucide="sun" class="w-3 h-3"></i> Solar PV:</span> <span id="metPv" class="font-mono font-bold">0 kWp</span></div>
+        <div class="flex justify-between text-slate-300"><span class="flex items-center gap-1.5 text-emerald-400"><i data-lucide="battery" class="w-3 h-3"></i> BESS:</span> <span id="metBess" class="font-mono font-bold">0 kWh</span></div>
+        <div class="flex justify-between text-slate-300"><span class="flex items-center gap-1.5 text-sky-400"><i data-lucide="zap" class="w-3 h-3"></i> PoE IT:</span> <span id="metPoe" class="font-mono font-bold">0 W</span></div>
+        <div class="flex justify-between text-slate-300 pt-1 border-t border-slate-800"><span class="flex items-center gap-1.5 text-cyan-400"><i data-lucide="route" class="w-3 h-3"></i> Canalización:</span> <span id="metPath" class="font-mono font-bold">0 m</span></div>
       </div>
     </aside>
+
   </div>
 
-  <!-- Contenedor de Toasts -->
-  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+  <!-- ================= MODALES ================= -->
 
-  <!-- Modal BOM -->
-  <div id="bomModal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col">
-      <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50 rounded-t-xl">
-        <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2"><span>📊</span> Cómputo de Materiales (BOM)</h2>
-        <button onclick="closeBomModal()" class="text-slate-400 hover:text-white transition">✖</button>
+  <!-- MODAL: BOM Y EXPORTACIÓN PDF/CSV -->
+  <div id="modalBOM" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[88vh]">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950 rounded-t-2xl">
+        <h3 class="font-bold text-slate-100 flex items-center gap-2"><i data-lucide="table-2" class="text-emerald-400"></i> Listado de Materiales (BOM)</h3>
+        <button onclick="closeModal('modalBOM')" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
       </div>
-      <div class="flex-1 overflow-y-auto p-4 space-y-6 text-xs">
+      <div class="p-4 overflow-y-auto space-y-5" id="bomContentArea">
+        
         <div>
-          <h3 class="font-bold text-emerald-400 mb-2 border-b border-slate-800 pb-1 flex justify-between">
-            <span>Equipos y Dispositivos</span>
-            <span id="bomDevicesCount" class="text-slate-400">0 items</span>
-          </h3>
-          <table class="w-full text-left border-collapse">
-            <thead><tr class="text-slate-400 border-b border-slate-800"><th class="p-2">Cant</th><th class="p-2">Categoría</th><th class="p-2">Modelo</th><th class="p-2">Especificaciones</th><th class="p-2">Notas</th></tr></thead>
-            <tbody id="bomDevicesTable" class="divide-y divide-slate-800/50"></tbody>
+          <h4 class="text-xs font-semibold text-emerald-400 uppercase mb-2 flex items-center justify-between">
+            <span>Equipos (GPON, IoT, Solar, Redes)</span> <span id="bomCountNodes" class="font-mono">0 items</span>
+          </h4>
+          <table class="w-full text-left text-xs text-slate-300 border border-slate-800 rounded-lg overflow-hidden">
+            <thead class="bg-slate-800 text-slate-400 uppercase"><tr><th class="p-2">Cant</th><th class="p-2">Categoría</th><th class="p-2">Modelo/Descripción</th><th class="p-2">Specs</th></tr></thead>
+            <tbody id="bomTableNodes" class="divide-y divide-slate-800"></tbody>
           </table>
         </div>
+
         <div>
-          <h3 class="font-bold text-cyan-400 mb-2 border-b border-slate-800 pb-1 flex justify-between">
-            <span>Canalizaciones y Vías</span>
-            <span id="bomPathwaysCount" class="text-slate-400">0 m total</span>
-          </h3>
-          <table class="w-full text-left border-collapse">
-            <thead><tr class="text-slate-400 border-b border-slate-800"><th class="p-2">Tipo</th><th class="p-2">Formato</th><th class="p-2">Long. Neta</th><th class="p-2">Con Merma (5%)</th><th class="p-2">Accesorios Est.</th></tr></thead>
-            <tbody id="bomPathwaysTable" class="divide-y divide-slate-800/50"></tbody>
+          <h4 class="text-xs font-semibold text-cyan-400 uppercase mb-2 flex items-center justify-between">
+            <span>Canalizaciones y Cajas (TIA-569)</span> <span id="bomCountPathways" class="font-mono">0 m</span>
+          </h4>
+          <table class="w-full text-left text-xs text-slate-300 border border-slate-800 rounded-lg overflow-hidden">
+            <thead class="bg-slate-800 text-slate-400 uppercase"><tr><th class="p-2">Material</th><th class="p-2">Longitud Neta</th><th class="p-2">Total (+5% Merma)</th><th class="p-2">Accesorios Estimados</th></tr></thead>
+            <tbody id="bomTablePathways" class="divide-y divide-slate-800"></tbody>
           </table>
         </div>
+
         <div>
-          <h3 class="font-bold text-sky-400 mb-2 border-b border-slate-800 pb-1 flex justify-between">
-            <span>Cableado y Conductores</span>
-            <span id="bomCablesCount" class="text-slate-400">0 enlaces</span>
-          </h3>
-          <table class="w-full text-left border-collapse">
-            <thead><tr class="text-slate-400 border-b border-slate-800"><th class="p-2">Tipo de Cable</th><th class="p-2">Origen</th><th class="p-2">Destino</th><th class="p-2">Long. Neta</th><th class="p-2">C/ Holgura (10%)</th><th class="p-2">Etiqueta</th></tr></thead>
-            <tbody id="bomCablesTable" class="divide-y divide-slate-800/50"></tbody>
+          <h4 class="text-xs font-semibold text-sky-400 uppercase mb-2 flex items-center justify-between">
+            <span>Cableado, Fibra Óptica y Enlaces</span> <span id="bomCountCables" class="font-mono">0 enlaces</span>
+          </h4>
+          <table class="w-full text-left text-xs text-slate-300 border border-slate-800 rounded-lg overflow-hidden">
+            <thead class="bg-slate-800 text-slate-400 uppercase"><tr><th class="p-2">Tipo de Conductor</th><th class="p-2">Origen ➔ Destino</th><th class="p-2">Etiqueta</th><th class="p-2">Total (+10% Holgura)</th></tr></thead>
+            <tbody id="bomTableCables" class="divide-y divide-slate-800"></tbody>
           </table>
         </div>
-      </div>
-      <div class="p-4 border-t border-slate-800 flex justify-end gap-3 bg-slate-900/50 rounded-b-xl">
-        <button onclick="closeBomModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-sm font-medium transition">Cerrar</button>
-        <button onclick="exportBomCSV()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium shadow-lg shadow-emerald-600/20 transition flex items-center gap-2"><span>📥</span> Exportar CSV</button>
-      </div>
-    </div>
-  </div>
 
-  <!-- Modal Calculadora PV -->
-  <div id="pvCalculatorModal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl w-full max-w-2xl flex flex-col">
-      <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50 rounded-t-xl">
-        <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2"><span>⚡</span> Calculadora Fotovoltaica (NEC 690)</h2>
-        <button onclick="closePvCalculatorModal()" class="text-slate-400 hover:text-white transition">✖</button>
       </div>
-      <div class="p-4 grid grid-cols-2 gap-6 text-sm">
-        <div class="space-y-3">
-          <h3 class="font-semibold text-amber-400 border-b border-slate-800 pb-1">Parámetros del String</h3>
-          <div><label class="block text-slate-400 text-xs mb-1">Módulos en Serie:</label><input id="calcPvModulesCount" type="number" value="12" oninput="runPvCalculations()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-slate-200"></div>
-          <div><label class="block text-slate-400 text-xs mb-1">Potencia (Wp):</label><input id="calcPvModuleWp" type="number" value="580" oninput="runPvCalculations()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-slate-200"></div>
-          <div><label class="block text-slate-400 text-xs mb-1">Voc (Tensión Vacío):</label><input id="calcPvVoc" type="number" value="51.2" oninput="runPvCalculations()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-slate-200"></div>
-          <div><label class="block text-slate-400 text-xs mb-1">Vmp (Tensión Max):</label><input id="calcPvVmp" type="number" value="43.1" oninput="runPvCalculations()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-slate-200"></div>
-          <div><label class="block text-slate-400 text-xs mb-1">Isc (Corriente Corto):</label><input id="calcPvIsc" type="number" value="14.2" oninput="runPvCalculations()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-slate-200"></div>
-          <div><label class="block text-slate-400 text-xs mb-1">Temp. Mínima (°C):</label><input id="calcPvTmin" type="number" value="0" oninput="runPvCalculations()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-slate-200"></div>
-        </div>
-        <div class="space-y-3 bg-slate-900/50 p-4 rounded-lg border border-slate-800 flex flex-col justify-center">
-          <h3 class="font-semibold text-emerald-400 border-b border-slate-800 pb-1">Resultados</h3>
-          <div class="flex justify-between"><span class="text-slate-400">Voc Max (Corregido):</span><span id="calcResVocMax" class="font-mono text-amber-300 font-bold">0 V</span></div>
-          <div class="flex justify-between"><span class="text-slate-400">Vmp Total:</span><span id="calcResVmpTotal" class="font-mono text-slate-200">0 V</span></div>
-          <div class="flex justify-between"><span class="text-slate-400">Ampacidad (1.56x):</span><span id="calcResAmpacity" class="font-mono text-emerald-300 font-bold">0 A</span></div>
-          <div class="flex justify-between"><span class="text-slate-400">Energía Diaria:</span><span id="calcResEnergyDaily" class="font-mono text-sky-300 font-bold">0 kWh/d</span></div>
-          <div id="calcResVocStatus" class="mt-4 p-2 bg-slate-950 rounded text-xs border border-slate-800"></div>
-          <div id="calcResCableSuggest" class="mt-2 p-2 bg-slate-950 rounded text-xs border border-slate-800 text-slate-400"></div>
+      <div class="p-4 border-t border-slate-800 bg-slate-950 flex justify-between items-center rounded-b-2xl">
+        <span class="text-xs text-slate-400">Las métricas se basan en la escala calibrada del plano.</span>
+        <div class="flex gap-2">
+          <button onclick="exportBomCSV()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium flex items-center gap-2"><i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-400"></i> Excel CSV</button>
+          <button onclick="exportBomPDF()" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-medium flex items-center gap-2 shadow-lg shadow-red-600/20"><i data-lucide="file-text" class="w-4 h-4"></i> Exportar PDF</button>
         </div>
       </div>
-      <div class="p-4 border-t border-slate-800 flex justify-end">
-        <button onclick="closePvCalculatorModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-sm font-medium transition">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- MODAL: GESTOR DE PROYECTOS LOCALES -->
+  <div id="modalProjects" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl shadow-2xl flex flex-col">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950 rounded-t-2xl">
+        <h3 class="font-bold text-slate-100 flex items-center gap-2"><i data-lucide="folder-open" class="text-indigo-400"></i> Gestor de Proyectos</h3>
+        <button onclick="closeModal('modalProjects')" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
+      </div>
+      <div class="p-4 border-b border-slate-800 bg-slate-900/50 flex gap-2">
+        <button onclick="saveProjectToLocal()" class="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2"><i data-lucide="save" class="w-4 h-4"></i> Guardar Estado Actual</button>
+        <button onclick="exportProjectJSON()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs border border-slate-700" title="Descargar archivo JSON"><i data-lucide="download"></i></button>
+        <label class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs border border-slate-700 cursor-pointer" title="Cargar archivo JSON">
+          <i data-lucide="upload"></i> <input type="file" accept=".json" class="hidden" onchange="importProjectJSON(event)">
+        </label>
+      </div>
+      <div class="p-4 flex-1 overflow-y-auto min-h-[200px] max-h-[50vh]">
+        <div class="text-[10px] font-bold uppercase text-slate-500 mb-2">Proyectos en el Navegador (Local Storage)</div>
+        <div id="localProjectsList" class="space-y-2"></div>
       </div>
     </div>
   </div>
 
-  <!-- Modal Gestor de Proyectos -->
-  <div id="projectManagerModal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl w-full max-w-md flex flex-col">
-      <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50 rounded-t-xl">
-        <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2"><span>📁</span> Mis Proyectos</h2>
-        <button onclick="closeProjectManager()" class="text-slate-400 hover:text-white transition">✖</button>
+  <!-- MODAL: CÁLCULO SOLAR NEC -->
+  <div id="modalSolar" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <!-- Contenido similar al Asistente Solar ya desarrollado -->
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-xl rounded-2xl shadow-2xl flex flex-col">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950 rounded-t-2xl">
+        <h3 class="font-bold text-slate-100 flex items-center gap-2"><i data-lucide="sun" class="text-amber-400"></i> Asistente Solar (NEC 690)</h3>
+        <button onclick="closeModal('modalSolar')" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
       </div>
-      <div class="p-4 max-h-[60vh] overflow-y-auto space-y-2" id="savedProjectsList"></div>
-      <div class="p-4 border-t border-slate-800 flex justify-end bg-slate-900/50 rounded-b-xl">
-        <button onclick="closeProjectManager()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-sm font-medium transition">Cerrar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Manual de Usuario -->
-  <div id="userManualModal" class="hidden fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl w-full max-w-xl flex flex-col">
-      <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50 rounded-t-xl">
-        <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2"><span>📖</span> Guía Rápida de Uso</h2>
-        <button onclick="closeUserManualModal()" class="text-slate-400 hover:text-white transition">✖</button>
-      </div>
-      <div class="p-4 max-h-[60vh] overflow-y-auto space-y-4 text-sm text-slate-300">
-        <p>Bienvenido a <strong>TechDiagram Pro</strong>. Aquí tienes los conceptos básicos:</p>
-        <ul class="list-disc pl-5 space-y-2">
-          <li><strong>Agregar Equipos:</strong> Usa el panel izquierdo para buscar y añadir equipos al lienzo con un clic.</li>
-          <li><strong>Mover y Seleccionar (V):</strong> Arrastra los equipos en el lienzo para organizarlos. Haz clic para ver sus propiedades en el panel derecho.</li>
-          <li><strong>Conectar Cables (C):</strong> Activa el modo cablear, selecciona el tipo de cable, clic en el origen y clic en el destino.</li>
-          <li><strong>Trazar Canalización (P):</strong> Igual que los cables, pero para tuberías y escalerillas (rutas ortogonales).</li>
-          <li><strong>Subir Plano:</strong> Carga un PDF o imagen de fondo para escalar y dibujar sobre él.</li>
-        </ul>
-      </div>
-      <div class="p-4 border-t border-slate-800 flex justify-end bg-slate-900/50 rounded-b-xl">
-        <button onclick="closeUserManualModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition">¡Entendido!</button>
+      <div class="p-5 space-y-4 text-xs text-slate-300">
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-slate-400 mb-1">Módulos en Serie</label><input type="number" id="calcSolarN" value="12" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5"></div>
+          <div><label class="block text-slate-400 mb-1">Temp. Mínima Sitio (°C)</label><input type="number" id="calcSolarTmin" value="0" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5"></div>
+          <div><label class="block text-slate-400 mb-1">Voc Panel STC (V)</label><input type="number" id="calcSolarVoc" value="51.2" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5"></div>
+          <div><label class="block text-slate-400 mb-1">Isc Panel STC (A)</label><input type="number" id="calcSolarIsc" value="14.2" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5"></div>
+        </div>
+        <div class="p-3 bg-slate-950 border border-slate-800 rounded-lg flex justify-between items-center">
+          <div>
+            <div class="text-[10px] text-amber-400 uppercase font-bold">Voc Máx (Corregido NEC)</div>
+            <div id="resVoc" class="text-lg font-mono font-bold text-white">0 V</div>
+          </div>
+          <div class="text-right">
+            <div class="text-[10px] text-emerald-400 uppercase font-bold">Ampacidad Conductor (1.56x)</div>
+            <div id="resAmp" class="text-lg font-mono font-bold text-white">0 A</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- SCRIPT COMPLETO CORREGIDO -->
+  <!-- MODAL: CALIBRACIÓN -->
+  <div id="modalCalibrate" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-xl p-4 shadow-2xl">
+      <h3 class="font-bold text-amber-400 text-sm mb-2 flex items-center gap-2"><i data-lucide="ruler"></i> Fijar Escala del Plano</h3>
+      <p class="text-xs text-slate-400 mb-4">Distancia medida en pantalla: <span id="calibPxSpan" class="text-white font-mono bg-slate-800 px-1 rounded">0</span> px.<br>Ingresa a cuántos metros reales equivale.</p>
+      <input type="number" id="calibMetersInput" value="5.0" step="0.1" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white mb-4 outline-none">
+      <div class="flex justify-end gap-2">
+        <button onclick="cancelCalibration()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded text-xs text-slate-300">Cancelar</button>
+        <button onclick="applyCalibration()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 rounded text-xs text-white font-bold">Aplicar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-6 right-6 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-800 text-white px-4 py-2.5 rounded-lg border border-slate-700 shadow-2xl text-xs flex items-center gap-2 z-50 pointer-events-none">
+    <i data-lucide="info" class="w-4 h-4 text-indigo-400"></i> <span id="toastMsg">Acción exitosa</span>
+  </div>
+
+  <!-- ================= LÓGICA DE LA APLICACIÓN ================= -->
   <script>
-    const APP_STATE = {
+    // --- ESTADO PRINCIPAL ---
+    const STATE = {
+      projectConfig: {
+        name: "Proyecto de Ingeniería 01",
+        logoDataUrl: null
+      },
       nodes: [],
-      connections: [],
-      pathways: [],
-      interactionMode: 'select',
-      selectedNodeId: null,
-      selectedConnId: null,
-      selectedPathwayId: null,
-      connectingSourceNodeId: null,
-      pathwaySourceNodeId: null,
-      isPanning: false,
-      panX: 0,
-      panY: 0,
-      panStartX: 0,
-      panStartY: 0,
-      zoom: 1,
-      snapToGrid: true,
-      gridSize: 20,
-      isDraggingNode: false,
-      draggedNodeId: null,
-      dragOffsetX: 0,
-      dragOffsetY: 0,
-      scaleMetersPerPixel: 0.05,
-      floorPlanDataUrl: null,
-      calibrationPoints: []
+      connections: [], // Cables
+      pathways: [],    // Tuberías
+      mode: 'select',  // select, connect, pathway, calibrate
+      scaleMetersPerPx: 0.05,
+      zoom: 1, panX: 40, panY: 40,
+      
+      // Selección
+      selNodeId: null, selConnId: null, selPathId: null,
+      
+      // Ruteo Multipunto
+      routeSourceId: null,
+      routeWaypoints: [], // Array de {x,y}
+      isRouting: false,
+
+      // Calibración
+      calibPoints: [],
+      
+      // Planos PDF/Img
+      bgImage: null, bgOpacity: 0.4
     };
 
-    const COMPONENT_DEFINITIONS = {
-      'pv_module_580': { category: 'Fotovoltaico', label: 'Panel Solar 580W', model: 'TOPCon Bifacial', icon: '🪟', color: '#f59e0b', badge: '580W', pvWp: 580, voltage: '51V DC' },
-      'pv_string': { category: 'Fotovoltaico', label: 'String Solar (10)', model: '5.8 kWp', icon: '☀️', color: '#f59e0b', badge: 'String', pvWp: 5800, voltage: '510V DC' },
-      'pv_inverter_string': { category: 'Fotovoltaico', label: 'Inversor String', model: '10kW', icon: '⚡', color: '#f59e0b', badge: 'On-Grid' },
-      'pv_inverter': { category: 'Fotovoltaico', label: 'Inversor Híbrido', model: '6kW', icon: '🔄', color: '#f59e0b', badge: 'BESS' },
-      'pv_microinverter': { category: 'Fotovoltaico', label: 'Microinversor', model: '2000W', icon: '🔲', color: '#f59e0b', badge: 'AC' },
-      'pv_combiner_box': { category: 'Fotovoltaico', label: 'Combiner Box', model: '4-In 1-Out', icon: '🧰', color: '#d97706', badge: 'Fusibles' },
-      'pv_dc_disconnect': { category: 'Fotovoltaico', label: 'Seccionador DC', model: '1000V', icon: '🛑', color: '#dc2626', badge: '32A' },
-      'pv_spd_ground': { category: 'Fotovoltaico', label: 'DPS & Tierra', model: 'Tipo II', icon: '⚡', color: '#84cc16', badge: '1000V DC' },
-      'bess_battery': { category: 'BESS', label: 'Batería Rack', model: 'LiFePO4', icon: '🔋', color: '#10b981', badge: '5.12kWh', bessKwh: 5.12 },
-      'bess_commercial_cabinet': { category: 'BESS', label: 'Gabinete BESS', model: 'HV BMS', icon: '🗄️', color: '#059669', badge: '30kWh', bessKwh: 30 },
-      'elec_panel': { category: 'Eléctrico', label: 'Tablero AC', model: 'ATS', icon: '🔌', color: '#dc2626', badge: '120/240V' },
-      'iot_smart_meter': { category: 'IoT', label: 'Medidor Bidireccional', model: 'Modbus', icon: '📊', color: '#a855f7', badge: 'RS-485' },
-      'cam_dome': { category: 'CCTV', label: 'Cámara Domo', model: 'IP 4MP', icon: '🎥', color: '#0284c7', badge: '7W', poeWatts: 7 },
-      'cam_bullet': { category: 'CCTV', label: 'Cámara Bullet', model: 'IP 4K', icon: '📹', color: '#0284c7', badge: '9W', poeWatts: 9 },
-      'cam_ptz': { category: 'CCTV', label: 'Cámara PTZ', model: '360°', icon: '🛰️', color: '#0ea5e9', badge: '25W', poeWatts: 25 },
-      'nvr_server': { category: 'CCTV', label: 'NVR 32Ch', model: 'Servidor', icon: '🗄️', color: '#0f766e', badge: '120V AC' },
-      'acs_panel': { category: 'Acceso', label: 'Panel Acceso', model: '4 Puertas', icon: '🎛️', color: '#0d9488', badge: 'IP', poeWatts: 15 },
-      'acs_reader': { category: 'Acceso', label: 'Lectora', model: 'RFID/Bio', icon: '💳', color: '#14b8a6', badge: 'Wiegand' },
-      'acs_maglock': { category: 'Acceso', label: 'Electroimán', model: '600lb', icon: '🧲', color: '#14b8a6', badge: '12V DC' },
-      'acs_rex': { category: 'Acceso', label: 'Botón REX', model: 'Salida', icon: '🔘', color: '#14b8a6', badge: 'Seco' },
-      'net_switch_poe': { category: 'Redes', label: 'Switch PoE+', model: '24P', icon: '🔀', color: '#4f46e5', badge: '370W' },
-      'net_router': { category: 'Redes', label: 'Router Firewall', model: 'Dual-WAN', icon: '🛡️', color: '#4338ca', badge: 'Gateway' },
-      'net_ap': { category: 'Redes', label: 'Access Point', model: 'Wi-Fi 6', icon: '📶', color: '#6366f1', badge: '13W', poeWatts: 13 },
-      'net_rack': { category: 'Redes', label: 'Rack 24U', model: 'Gabinete', icon: '🚪', color: '#312e81', badge: 'Estructura' },
-      'iot_gateway': { category: 'IoT', label: 'Gateway LoRa', model: 'IP67', icon: '🛰️', color: '#7c3aed', badge: '10W', poeWatts: 10 },
-      'iot_sensor': { category: 'IoT', label: 'Sensor', model: 'Temp/Hum', icon: '🌡️', color: '#9333ea', badge: 'Batería' },
-      'iot_plc': { category: 'IoT', label: 'PLC Industrial', model: 'RTU', icon: '⚙️', color: '#6b21a8', badge: 'Modbus' },
-      'box_junction_4x4': { category: 'Canalización', label: 'Caja Paso', model: '4x4 EMT', icon: '📦', color: '#0891b2', badge: 'Registro' },
-      'box_pull_nema': { category: 'Canalización', label: 'Registro NEMA', model: '12x12', icon: '🗃️', color: '#0891b2', badge: 'Halado' },
-      'condulet_tee': { category: 'Canalización', label: 'Condulet T', model: '3/4"', icon: '🪜', color: '#0891b2', badge: 'Aluminio' },
-      'box_chalupa': { category: 'Canalización', label: 'Caja Chalupa', model: '2x4', icon: '🔲', color: '#0891b2', badge: 'Pared' }
+    // --- LIBRERÍAS DE EQUIPOS (EXPANDIDA: ZTE, GPON, IoT, SOLAR, CCTV) ---
+    const LIB_DEFS = {
+      // GPON & REDES ÓPTICAS FTTH/FTTR
+      gpon_olt_zte: { cat: 'GPON/FTTH', label: 'OLT ZTE C320 / C620', icon: 'server', color: '#10b981', props: { poeWatts: 0, voltage: '-48V DC / AC', ports: ['GPON/XG-PON', 'Uplink 10G'] } },
+      gpon_ont_zte: { cat: 'GPON/FTTH', label: 'ONT ZTE F609/F660 Wi-Fi', icon: 'router', color: '#10b981', props: { poeWatts: 0, voltage: '12V DC', ports: ['PON (SC/APC)', '4x GE', 'Wi-Fi'] } },
+      gpon_splitter_8: { cat: 'GPON/FTTH', label: 'Splitter Óptico PLC 1:8', icon: 'git-merge', color: '#059669', props: { poeWatts: 0, voltage: 'Pasivo', ports: ['1 In SC/APC', '8 Out SC/APC'] } },
+      gpon_splitter_16: { cat: 'GPON/FTTH', label: 'Splitter Óptico PLC 1:16', icon: 'git-merge', color: '#059669', props: { poeWatts: 0, voltage: 'Pasivo', ports: ['1 In SC/APC', '16 Out SC/APC'] } },
+      fat_box: { cat: 'GPON/FTTH', label: 'Caja NAP / FAT 16 Puertos', icon: 'box', color: '#34d399', props: { poeWatts: 0, voltage: 'Pasivo', ports: ['Acometidas Drop'] } },
+      fttr_master: { cat: 'FTTR', label: 'Router Maestro FTTR', icon: 'wifi-high', color: '#14b8a6', props: { poeWatts: 0, voltage: '12V DC', ports: ['Uplink PON', 'Downlink Óptico'] } },
+      fttr_slave: { cat: 'FTTR', label: 'Esclavo FTTR Wi-Fi 6', icon: 'wifi', color: '#14b8a6', props: { poeWatts: 0, voltage: 'PoF / DC', ports: ['Entrada Fibra Invisible'] } },
+
+      // CCTV & SEGURIDAD
+      cam_dome: { cat: 'CCTV', label: 'Cámara Domo IP 4K', icon: 'video', color: '#0ea5e9', props: { poeWatts: 7, voltage: '48V PoE' } },
+      cam_bullet: { cat: 'CCTV', label: 'Cámara Bullet LPR/Color', icon: 'camera', color: '#0ea5e9', props: { poeWatts: 9, voltage: '48V PoE' } },
+      cam_ptz: { cat: 'CCTV', label: 'Cámara PTZ 360 Auto-Tracking', icon: 'cctv', color: '#0284c7', props: { poeWatts: 25, voltage: 'Hi-PoE' } },
+      nvr_server: { cat: 'CCTV', label: 'NVR / VMS 32 Ch', icon: 'hard-drive', color: '#0369a1', props: { poeWatts: 0, voltage: '120V AC' } },
+      acs_panel: { cat: 'Acceso', label: 'Panel Control Acceso 4P', icon: 'lock-keyhole', color: '#0d9488', props: { poeWatts: 15, voltage: '12V DC' } },
+
+      // IOT & AUTOMATIZACIÓN
+      iot_gateway: { cat: 'IoT', label: 'Gateway LoRaWAN Industrial', icon: 'radio', color: '#8b5cf6', props: { poeWatts: 12, voltage: '48V PoE' } },
+      iot_sensor_th: { cat: 'IoT', label: 'Sensor Temp/Humedad LoRa', icon: 'thermometer', color: '#a855f7', props: { poeWatts: 0, voltage: 'Bat 3.6V' } },
+      iot_valve: { cat: 'IoT', label: 'Válvula Inteligente Agua/Gas', icon: 'pipette', color: '#c084fc', props: { poeWatts: 0, voltage: '12V DC / Bat' } },
+      iot_relay: { cat: 'IoT', label: 'Relé Modbus 8CH DIN', icon: 'cpu', color: '#7c3aed', props: { poeWatts: 0, voltage: '24V DC' } },
+      smart_meter: { cat: 'IoT', label: 'Medidor Energía Bidireccional', icon: 'activity', color: '#6d28d9', props: { poeWatts: 0, voltage: '240/480V AC' } },
+
+      // REDES IT
+      switch_poe: { cat: 'Redes', label: 'Switch Core 24P PoE+ 10G', icon: 'network', color: '#4f46e5', props: { poeWatts: 0, voltage: '120/240V' } },
+      router_fw: { cat: 'Redes', label: 'Router Firewall Borde', icon: 'shield-check', color: '#4338ca', props: { poeWatts: 0, voltage: '120V AC' } },
+      ap_wifi: { cat: 'Redes', label: 'Access Point Wi-Fi 6', icon: 'router', color: '#6366f1', props: { poeWatts: 14, voltage: 'PoE+' } },
+      rack_it: { cat: 'Redes', label: 'Gabinete Rack 42U', icon: 'server-cog', color: '#475569', props: { poeWatts: 0, voltage: 'PDU AC' } },
+
+      // FOTOVOLTAICO & BESS (NEC)
+      pv_panel: { cat: 'Solar', label: 'Panel Solar TOPCon Bifacial', icon: 'sun', color: '#f59e0b', props: { pvWp: 580, poeWatts: 0, voltage: '51.2V Voc' } },
+      pv_string: { cat: 'Solar', label: 'Arreglo String (10 Paneles)', icon: 'grip', color: '#f59e0b', props: { pvWp: 5800, poeWatts: 0, voltage: '512V Voc' } },
+      pv_inv_hybrid: { cat: 'Solar', label: 'Inversor Híbrido Solar+BESS', icon: 'zap', color: '#ea580c', props: { pvWp: 0, poeWatts: 0, voltage: '48V DC / 240V AC' } },
+      bess_rack: { cat: 'BESS', label: 'Batería Litio LiFePO4 Rack', icon: 'battery-medium', color: '#22c55e', props: { bessKwh: 5.12, poeWatts: 0, voltage: '48V DC' } },
+      pv_combiner: { cat: 'Solar', label: 'Combiner Box DC gPV+DPS', icon: 'box-select', color: '#d97706', props: { pvWp: 0, poeWatts: 0, voltage: '1000V DC' } },
+
+      // CANALIZACIONES Y CAJAS
+      box_4x4: { cat: 'Canalización', label: 'Caja Cuadrada 4x4 EMT', icon: 'package', color: '#06b6d4', props: { poeWatts: 0, voltage: 'N/A' } },
+      box_nema: { cat: 'Canalización', label: 'Registro Halado NEMA', icon: 'archive', color: '#0891b2', props: { poeWatts: 0, voltage: 'N/A' } }
     };
 
-    const CABLE_CONFIGS = {
-      'pv_dc': { type: 'cable', name: 'Cable Solar DC 1500V', color: '#ef4444', marker: 'url(#arrow-pv)' },
-      'pv_ground': { type: 'cable', name: 'Tierra Solar 16mm²', color: '#84cc16', marker: 'url(#arrow-pv-ground)' },
-      'ac_power': { type: 'cable', name: 'AC Potencia 120/240V', color: '#ef4444', marker: 'url(#arrow-ac)' },
-      'poe': { type: 'cable', name: 'Cat6 PoE+', color: '#38bdf8', marker: 'url(#arrow-poe)' },
-      'fiber': { type: 'cable', name: 'Fibra Óptica OM3', color: '#ec4899', marker: 'url(#arrow-fiber)' },
-      'wiegand': { type: 'cable', name: 'Bus Wiegand RS-485', color: '#10b981', marker: 'url(#arrow-wiegand)' },
-      'wireless': { type: 'cable', name: 'Enlace Inalámbrico', color: '#a855f7', strokeDasharray: '4,4' },
-      'conduit_emt_34': { type: 'pathway', name: 'Tubería EMT 3/4"', color: '#94a3b8', strokeWidth: 4 },
-      'conduit_emt_1': { type: 'pathway', name: 'Tubería EMT 1"', color: '#94a3b8', strokeWidth: 6 },
-      'conduit_pvc_1': { type: 'pathway', name: 'Tubería PVC 1"', color: '#64748b', strokeWidth: 6 },
-      'tray_mesh_150': { type: 'pathway', name: 'Escalerilla Malla 150mm', isPattern: true, strokeWidth: 16 },
-      'tray_ladder_300': { type: 'pathway', name: 'Escalerilla 300mm', isPattern: true, strokeWidth: 20 }
+    const LINE_STYLES = {
+      fiber_drop: { color: '#10b981', w: 2, dash: 'none', label: 'Fibra Drop' },
+      fiber_trunk: { color: '#059669', w: 3, dash: 'none', label: 'Fibra Troncal' },
+      fiber_fttr: { color: '#a7f3d0', w: 1.5, dash: '3,3', label: 'Fibra FTTR' },
+      poe: { color: '#38bdf8', w: 2.5, dash: 'none', label: 'Cable UTP' },
+      wiegand: { color: '#a855f7', w: 2, dash: '4,2', label: 'Cable Datos' },
+      wireless: { color: '#c084fc', w: 2, dash: '5,5', label: 'RF/Wi-Fi' },
+      pv_dc: { color: '#ef4444', w: 3.5, dash: 'none', label: 'Solar DC' },
+      pv_ground: { color: '#84cc16', w: 3, dash: '4,4', label: 'Tierra Física' },
+      ac_power: { color: '#f97316', w: 3.5, dash: 'none', label: 'Potencia AC' },
+      conduit_emt_34: { color: '#22d3ee', w: 6, dash: 'none', label: 'EMT 3/4"', isPathway: true },
+      conduit_emt_1: { color: '#06b6d4', w: 8, dash: 'none', label: 'EMT 1"', isPathway: true },
+      conduit_pvc_1: { color: '#94a3b8', w: 8, dash: 'none', label: 'PVC 1"', isPathway: true },
+      tray_mesh_150: { color: '#0284c7', w: 12, dash: 'url(#trayPattern)', label: 'Bandeja 150mm', isPathway: true },
+      microduct: { color: '#fcd34d', w: 5, dash: 'none', label: 'Microducto', isPathway: true }
     };
 
-    function showToast(msg, icon = 'ℹ️') {
-      const c = document.getElementById('toastContainer');
-      const t = document.createElement('div');
-      t.className = 'bg-slate-800 text-slate-200 px-4 py-2 rounded-lg shadow-lg border border-slate-700 flex items-center gap-2 text-xs translate-y-2 opacity-0 transition-all duration-300 pointer-events-auto';
-      t.innerHTML = `<span>${icon}</span> <span>${msg}</span>`;
-      c.appendChild(t);
-      setTimeout(() => { t.classList.remove('translate-y-2', 'opacity-0'); }, 10);
-      setTimeout(() => {
-        t.classList.add('translate-y-2', 'opacity-0');
-        setTimeout(() => t.remove(), 300);
-      }, 3000);
-    }
-
-    function toggleDropdown(id) {
-      const el = document.getElementById(id);
-      if (el) el.classList.toggle('hidden');
-    }
-
-    function zoomCanvas(factor) {
-      APP_STATE.zoom = Math.max(0.1, Math.min(3, APP_STATE.zoom + factor));
-      document.getElementById('zoomLevelText').innerText = Math.round(APP_STATE.zoom * 100) + '%';
-      updateCanvasTransform();
-    }
-    
-    function resetZoom() {
-      APP_STATE.zoom = 1;
-      APP_STATE.panX = 0;
-      APP_STATE.panY = 0;
-      document.getElementById('zoomLevelText').innerText = '100%';
-      updateCanvasTransform();
-    }
-
-    function updateCanvasTransform() {
-      const vp = document.getElementById('canvasViewport');
-      if (vp) vp.style.transform = `translate(${APP_STATE.panX}px, ${APP_STATE.panY}px) scale(${APP_STATE.zoom})`;
-    }
-
-    function toggleGrid() {
-      APP_STATE.snapToGrid = !APP_STATE.snapToGrid;
-      const btn = document.getElementById('gridToggleBtn');
-      if (btn) {
-        if (APP_STATE.snapToGrid) {
-          btn.classList.add('text-indigo-400');
-          btn.classList.remove('text-slate-500');
-        } else {
-          btn.classList.remove('text-indigo-400');
-          btn.classList.add('text-slate-500');
-        }
+    // --- INICIALIZACIÓN ---
+    window.onload = () => {
+      renderLibrary();
+      lucide.createIcons();
+      updateTransform();
+      setupKeyboard();
+      
+      // Load saved state if exists (basic recovery)
+      const lastSession = localStorage.getItem('techdiag_last');
+      if(lastSession) {
+        try {
+          const data = JSON.parse(lastSession);
+          if(data.nodes) STATE.nodes = data.nodes;
+          if(data.connections) STATE.connections = data.connections;
+          if(data.pathways) STATE.pathways = data.pathways;
+          if(data.projectConfig) {
+            STATE.projectConfig = data.projectConfig;
+            document.getElementById('projectName').value = STATE.projectConfig.name;
+            if(STATE.projectConfig.logoDataUrl) {
+              const img = document.getElementById('projectLogoImg');
+              img.src = STATE.projectConfig.logoDataUrl;
+              img.classList.remove('hidden');
+              document.getElementById('projectLogoIcon').classList.add('hidden');
+            }
+          }
+          if(data.bgImage) {
+            STATE.bgImage = data.bgImage;
+            const imgEl = document.getElementById('floorPlanImg');
+            imgEl.src = STATE.bgImage;
+            imgEl.onload = () => { document.getElementById('floorPlanWrapper').classList.remove('hidden'); document.getElementById('planControlBar').classList.remove('hidden'); };
+          }
+          updateAll();
+        } catch(e) {}
       }
-      showToast(APP_STATE.snapToGrid ? 'Rejilla activada' : 'Rejilla desactivada');
+    };
+
+    function saveState() {
+      STATE.projectConfig.name = document.getElementById('projectName').value;
+      localStorage.setItem('techdiag_last', JSON.stringify({
+        nodes: STATE.nodes, connections: STATE.connections, pathways: STATE.pathways, 
+        projectConfig: STATE.projectConfig, bgImage: STATE.bgImage
+      }));
     }
 
-    function setInteractionMode(mode) {
-      APP_STATE.interactionMode = mode;
-      APP_STATE.connectingSourceNodeId = null;
-      APP_STATE.pathwaySourceNodeId = null;
-      document.getElementById('tempCableLine')?.classList.add('hidden');
-      
-      const modes = {
-        'select': { text: 'Modo: Mover y Seleccionar', dot: 'bg-indigo-500' },
-        'connect': { text: 'Modo: Conectar Cables', dot: 'bg-emerald-500' },
-        'pathway': { text: 'Modo: Trazar Canalización', dot: 'bg-cyan-500' },
-        'calibrate': { text: 'Modo: Calibrar Escala', dot: 'bg-amber-500' }
-      };
-
-      document.getElementById('modeStatusText').innerText = modes[mode]?.text || '';
-      const dot = document.getElementById('modeStatusDot');
-      dot.className = `w-2.5 h-2.5 rounded-full animate-pulse ${modes[mode]?.dot}`;
-      
-      ['toolSelect', 'toolConnect', 'toolPathway'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.classList.remove('bg-indigo-600', 'text-white');
-          el.classList.add('text-slate-300', 'hover:bg-slate-800');
-        }
+    // --- LIBRERÍA Y SIDEBARS ---
+    function renderLibrary() {
+      const container = document.getElementById('libraryContainer');
+      container.innerHTML = '';
+      const categories = {};
+      Object.entries(LIB_DEFS).forEach(([k, v]) => {
+        if(!categories[v.cat]) categories[v.cat] = [];
+        categories[v.cat].push({ k, ...v });
       });
 
-      if (mode === 'select') document.getElementById('toolSelect')?.classList.add('bg-indigo-600', 'text-white');
-      if (mode === 'connect') document.getElementById('toolConnect')?.classList.add('bg-indigo-600', 'text-white');
-      if (mode === 'pathway') document.getElementById('toolPathway')?.classList.add('bg-indigo-600', 'text-white');
-      
-      renderNodes();
+      for(const cat in categories) {
+        container.innerHTML += `<div class="text-[10px] font-bold text-slate-500 uppercase mt-4 mb-2 px-1">${cat}</div>`;
+        const grid = document.createElement('div');
+        grid.className = 'grid grid-cols-2 gap-1.5';
+        categories[cat].forEach(item => {
+          grid.innerHTML += `
+            <button onclick="addNode('${item.k}')" class="comp-item flex flex-col items-center justify-center gap-1 p-2 bg-slate-900 border border-slate-800 rounded-lg hover:border-indigo-500 hover:bg-slate-800 transition group" data-name="${item.label.toLowerCase()}">
+              <i data-lucide="${item.icon}" class="w-5 h-5 text-[${item.color}] group-hover:scale-110 transition"></i>
+              <span class="text-[9px] text-slate-300 text-center leading-tight font-medium">${item.label}</span>
+            </button>
+          `;
+        });
+        container.appendChild(grid);
+      }
     }
 
-    function addNodeToCanvas(typeKey) {
-      const def = COMPONENT_DEFINITIONS[typeKey];
-      if (!def) return;
+    function filterLibrary() {
+      const term = document.getElementById('searchComp').value.toLowerCase();
+      document.querySelectorAll('.comp-item').forEach(el => {
+        el.style.display = el.getAttribute('data-name').includes(term) ? 'flex' : 'none';
+      });
+    }
 
-      const offset = (APP_STATE.nodes.length % 8) * 20;
-      const targetX = Math.round((180 + offset - APP_STATE.panX) / APP_STATE.zoom / (APP_STATE.snapToGrid ? APP_STATE.gridSize : 1)) * (APP_STATE.snapToGrid ? APP_STATE.gridSize : 1);
-      const targetY = Math.round((140 + offset - APP_STATE.panY) / APP_STATE.zoom / (APP_STATE.snapToGrid ? APP_STATE.gridSize : 1)) * (APP_STATE.snapToGrid ? APP_STATE.gridSize : 1);
+    function toggleSidebar(id) {
+      const el = document.getElementById(id);
+      el.classList.toggle('sidebar-collapsed');
+    }
 
-      const newNode = {
-        id: 'node_' + Date.now(),
-        typeKey: typeKey,
-        name: `${def.label} ${APP_STATE.nodes.filter(n => n.typeKey === typeKey).length + 1}`,
-        category: def.category,
-        model: def.model,
-        icon: def.icon,
-        badge: def.badge,
-        color: def.color,
-        poeWatts: def.poeWatts || 0,
-        pvWp: def.pvWp || 0,
-        bessKwh: def.bessKwh || 0,
-        voltage: def.voltage || 'N/A',
-        ipAddress: ['CCTV', 'Redes', 'IoT', 'Acceso'].includes(def.category) ? `192.168.1.${10 + APP_STATE.nodes.length}` : '',
-        x: Math.max(20, targetX),
-        y: Math.max(20, targetY)
+    function handleLogoUpload(e) {
+      const file = e.target.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        STATE.projectConfig.logoDataUrl = evt.target.result;
+        const img = document.getElementById('projectLogoImg');
+        img.src = evt.target.result;
+        img.classList.remove('hidden');
+        document.getElementById('projectLogoIcon').classList.add('hidden');
+        saveState();
       };
-
-      APP_STATE.nodes.push(newNode);
-      selectNode(newNode.id);
-      updateMetrics();
-      renderNodes();
-      showToast(`Añadido: ${newNode.name}`, '➕');
+      reader.readAsDataURL(file);
     }
 
-    function renderNodes() {
-      const layer = document.getElementById('nodesLayer');
-      if (!layer) return;
-      layer.innerHTML = APP_STATE.nodes.map(node => {
-        const isSelected = APP_STATE.selectedNodeId === node.id;
-        const isConnecting = (APP_STATE.interactionMode === 'connect' || APP_STATE.interactionMode === 'pathway') && 
-                             (APP_STATE.connectingSourceNodeId === node.id || APP_STATE.pathwaySourceNodeId === node.id);
-        
-        let ringClasses = isSelected ? `ring-2 ring-[${node.color}] ring-offset-2 ring-offset-slate-900` : '';
-        if (isConnecting) ringClasses = 'ring-2 ring-emerald-500 animate-pulse';
+    function updateProjectName() {
+      STATE.projectConfig.name = document.getElementById('projectName').value;
+      saveState();
+    }
 
-        return `
-          <div id="node-${node.id}"
-               class="absolute node-card w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-lg cursor-grab active:cursor-grabbing hover:border-slate-500 transition-colors ${ringClasses}"
-               style="left: ${node.x}px; top: ${node.y}px;"
-               onmousedown="handleNodeMouseDown(event, '${node.id}')"
-               onclick="handleNodeClick(event, '${node.id}')">
-            
-            <div class="h-1.5 w-full rounded-t-xl" style="background-color: ${node.color}"></div>
-            <div class="p-2 flex items-start gap-2 relative">
-              <div class="text-2xl mt-1">${node.icon}</div>
-              <div class="flex-1 min-w-0">
-                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">${node.category}</div>
-                <div class="text-xs font-semibold text-slate-100 truncate" title="${node.name}">${node.name}</div>
-                <div class="text-[10px] text-slate-400 truncate mt-0.5">${node.model}</div>
-                ${node.ipAddress ? `<div class="text-[9px] font-mono text-sky-400 mt-1">${node.ipAddress}</div>` : ''}
-              </div>
-            </div>
-            
-            <div class="px-2 pb-2 flex items-center justify-between">
-              <span class="px-1.5 py-0.5 rounded bg-slate-800 text-[9px] font-mono border border-slate-700" style="color: ${node.color}">
-                ${node.badge}
-              </span>
-            </div>
-            
-            ${(APP_STATE.interactionMode === 'connect' || APP_STATE.interactionMode === 'pathway') ? `
-              <div class="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-emerald-500 hover:bg-emerald-400 rounded-full border-2 border-slate-900 shadow-md flex items-center justify-center cursor-pointer transition-transform hover:scale-110 z-20"
-                   onclick="event.stopPropagation(); handleNodeConnectClick('${node.id}')">
-                <div class="w-2 h-2 bg-slate-900 rounded-full"></div>
-              </div>
-            ` : ''}
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      t.classList.remove('opacity-0', 'translate-y-20');
+      setTimeout(() => t.classList.add('opacity-0', 'translate-y-20'), 2500);
+    }
+
+    // --- MODO Y HERRAMIENTAS ---
+    function setMode(mode) {
+      STATE.mode = mode;
+      ['Select', 'Connect', 'Pathway'].forEach(m => {
+        const btn = document.getElementById('tool' + m);
+        if(btn) { btn.classList.remove('bg-indigo-600','text-white'); btn.classList.add('text-slate-300'); }
+      });
+      const act = document.getElementById('tool' + (mode.charAt(0).toUpperCase() + mode.slice(1)));
+      if(act) { act.classList.add('bg-indigo-600','text-white'); act.classList.remove('text-slate-300'); }
+      
+      const st = document.getElementById('modeStatusBox');
+      if(mode==='select') st.innerHTML = '<span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> <span>Modo: Seleccionar/Mover (Clic para propiedades)</span>';
+      if(mode==='connect') st.innerHTML = '<span class="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span> <span>Modo: Cablear (Clic en origen, clics libres en plano para curvas, clic destino)</span>';
+      if(mode==='pathway') st.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span>Modo: Canalización (Clic origen, clics libres en esquinas, clic destino)</span>';
+      
+      cancelRouting();
+    }
+
+    // --- NODOS Y RENDERIZADO DEL LIENZO ---
+    function addNode(typeKey) {
+      const def = LIB_DEFS[typeKey];
+      const node = {
+        id: 'n_' + Date.now(),
+        type: typeKey,
+        name: `${def.label} ${STATE.nodes.filter(n=>n.type===typeKey).length + 1}`,
+        x: (canvasContainer.clientWidth / 2 - STATE.panX) / STATE.zoom,
+        y: (canvasContainer.clientHeight / 2 - STATE.panY) / STATE.zoom,
+        props: { ...def.props }
+      };
+      STATE.nodes.push(node);
+      selectNode(node);
+      updateAll();
+    }
+
+    function updateAll() {
+      renderCanvasNodes();
+      renderVectors();
+      updateMetrics();
+      saveState();
+    }
+
+    function renderCanvasNodes() {
+      const layer = document.getElementById('nodesLayer');
+      layer.innerHTML = '';
+      STATE.nodes.forEach(n => {
+        const def = LIB_DEFS[n.type];
+        const isSel = STATE.selNodeId === n.id;
+        const isRouting = STATE.routeSourceId === n.id;
+        
+        const card = document.createElement('div');
+        card.id = `html_${n.id}`;
+        card.className = `absolute transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center border-2 cursor-pointer shadow-lg group ${isSel ? 'border-indigo-400 bg-indigo-900/50 shadow-indigo-500/30' : 'border-slate-700 bg-slate-900/80'} ${isRouting ? 'ring-2 ring-sky-400 animate-pulse' : ''}`;
+        card.style.left = `${n.x}px`; card.style.top = `${n.y}px`;
+        card.style.borderColor = isSel ? '#818cf8' : def.color;
+        
+        // Icon
+        card.innerHTML = `<i data-lucide="${def.icon}" class="w-4 h-4 text-white"></i>`;
+        
+        // Tooltip
+        card.innerHTML += `
+          <div class="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 p-2 rounded-lg shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 flex flex-col items-center whitespace-nowrap">
+            <span class="text-xs font-bold text-slate-100">${n.name}</span>
+            <span class="text-[9px] font-mono text-slate-400">${def.cat} • ${n.props.voltage || ''}</span>
           </div>
         `;
-      }).join('');
+        
+        card.onmousedown = (e) => handleNodeMouseDown(e, n);
+        layer.appendChild(card);
+      });
+      lucide.createIcons();
     }
 
-    function renderConnections() {
-      const layer = document.getElementById('connectionsLayer');
-      if (!layer) return;
-      layer.innerHTML = APP_STATE.connections.map(conn => {
-        const src = APP_STATE.nodes.find(n => n.id === conn.sourceId);
-        const tgt = APP_STATE.nodes.find(n => n.id === conn.targetId);
-        if (!src || !tgt) return '';
+    function renderVectors() {
+      const pathLayer = document.getElementById('pathwaysLayer');
+      const connLayer = document.getElementById('connectionsLayer');
+      pathLayer.innerHTML = ''; connLayer.innerHTML = '';
 
-        const cfg = CABLE_CONFIGS[conn.type] || CABLE_CONFIGS.pv_dc;
-        const isSelected = APP_STATE.selectedConnId === conn.id;
+      [...STATE.pathways, ...STATE.connections].forEach(route => {
+        const n1 = STATE.nodes.find(n => n.id === route.from);
+        const n2 = STATE.nodes.find(n => n.id === route.to);
+        if(!n1 || !n2) return;
+
+        const style = LINE_STYLES[route.type];
+        const isSel = STATE.selPathId === route.id || STATE.selConnId === route.id;
+        const isPathway = style.isPathway;
+
+        let d = `M ${n1.x} ${n1.y} `;
+        let distPx = 0;
+        let prev = n1;
         
-        const sx = src.x + 192; // ancho
-        const sy = src.y + 45; // alto
-        const tx = tgt.x;
-        const ty = tgt.y + 45;
+        route.waypoints.forEach(wp => { 
+          d += `L ${wp.x} ${wp.y} `; 
+          distPx += Math.hypot(wp.x - prev.x, wp.y - prev.y);
+          prev = wp;
+        });
+        d += `L ${n2.x} ${n2.y}`;
+        distPx += Math.hypot(n2.x - prev.x, n2.y - prev.y);
+        route.lengthMeters = distPx * STATE.scaleMetersPerPx;
 
-        const dx = Math.abs(tx - sx);
-        const cx1 = sx + dx * 0.5;
-        const cx2 = tx - dx * 0.5;
-        const pathD = `M ${sx},${sy} C ${cx1},${sy} ${cx2},${ty} ${tx},${ty}`;
-
-        return `
-          <g class="connector-line" onclick="selectConnection('${conn.id}')" style="cursor: pointer;">
-            <!-- Linea hit-box -->
-            <path d="${pathD}" fill="none" stroke="transparent" stroke-width="15" />
-            
-            <path d="${pathD}" fill="none" 
-                  stroke="${isSelected ? '#fbbf24' : cfg.color}" 
-                  stroke-width="${isSelected ? 3 : 2}" 
-                  stroke-dasharray="${cfg.strokeDasharray || 'none'}"
-                  marker-end="${cfg.marker || ''}" />
-                  
-            <!-- Etiqueta -->
-            <rect x="${(sx+tx)/2 - 30}" y="${(sy+ty)/2 - 10}" width="60" height="20" fill="#0f172a" rx="4" stroke="${cfg.color}" stroke-width="1" />
-            <text x="${(sx+tx)/2}" y="${(sy+ty)/2 + 3}" fill="#cbd5e1" font-size="10" font-family="monospace" text-anchor="middle">${conn.lengthMeters}m</text>
-          </g>
-        `;
-      }).join('');
-    }
-
-    function renderPathways() {
-      const layer = document.getElementById('pathwaysLayer');
-      if (!layer) return;
-      layer.innerHTML = APP_STATE.pathways.map(p => {
-        const src = APP_STATE.nodes.find(n => n.id === p.sourceId);
-        const tgt = APP_STATE.nodes.find(n => n.id === p.targetId);
-        if (!src || !tgt) return '';
-
-        const cfg = CABLE_CONFIGS[p.type] || CABLE_CONFIGS.conduit_emt_34;
-        const isSelected = APP_STATE.selectedPathwayId === p.id;
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'pointer-events-auto cursor-pointer');
         
-        const sx = src.x + 96;
-        const sy = src.y + 45;
-        const tx = tgt.x + 96;
-        const ty = tgt.y + 45;
+        const bg = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        bg.setAttribute('d', d); bg.setAttribute('fill', 'none'); 
+        bg.setAttribute('stroke', isSel ? '#ffffff' : style.color); 
+        bg.setAttribute('stroke-width', style.w + (isPathway ? 6 : 4));
+        bg.setAttribute('stroke-opacity', isSel ? '0.6' : '0.2');
 
-        let pathD = '';
-        if (p.routing === 'direct') {
-          pathD = `M ${sx},${sy} L ${tx},${ty}`;
-        } else {
-          const midX = sx + (tx - sx) / 2;
-          pathD = `M ${sx},${sy} L ${midX},${sy} L ${midX},${ty} L ${tx},${ty}`;
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', d); path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', isSel ? (isPathway?'#38bdf8':'#fff') : (style.dash.includes('url') ? style.dash : style.color));
+        path.setAttribute('stroke-width', style.w);
+        if(style.dash !== 'none' && !style.dash.includes('url')) path.setAttribute('stroke-dasharray', style.dash);
+        
+        const hit = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        hit.setAttribute('d', d); hit.setAttribute('fill', 'none'); hit.setAttribute('stroke', 'transparent'); hit.setAttribute('stroke-width', '24');
+        hit.onmousedown = (e) => { e.stopPropagation(); selectRoute(route, isPathway); };
+
+        g.appendChild(bg); g.appendChild(path); g.appendChild(hit);
+        
+        // Dibujar Waypoints si está seleccionado (para poder editarlos)
+        if(isSel && route.waypoints.length > 0) {
+          route.waypoints.forEach((wp, idx) => {
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', wp.x); circle.setAttribute('cy', wp.y); circle.setAttribute('r', '5');
+            circle.setAttribute('fill', '#fff'); circle.setAttribute('stroke', '#6366f1'); circle.setAttribute('stroke-width', '2');
+            circle.setAttribute('class', 'cursor-move');
+            circle.onmousedown = (e) => {
+              e.stopPropagation();
+              STATE.dragWp = wp; STATE.dragRoute = route;
+            };
+            g.appendChild(circle);
+          });
         }
 
-        const strokeColor = isSelected ? '#38bdf8' : (cfg.isPattern ? 'url(#trayPattern)' : cfg.color);
+        // Texto longitud
+        const txtPt = route.waypoints.length > 0 ? route.waypoints[Math.floor(route.waypoints.length/2)] : {x:(n1.x+n2.x)/2, y:(n1.y+n2.y)/2};
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', txtPt.x); text.setAttribute('y', txtPt.y - 10);
+        text.setAttribute('fill', isSel ? '#fff' : style.color); text.setAttribute('font-size', '10'); text.setAttribute('text-anchor', 'middle'); text.setAttribute('font-family', 'JetBrains Mono');
+        text.textContent = `${route.lengthMeters.toFixed(1)}m`;
+        g.appendChild(text);
+
+        (isPathway ? pathLayer : connLayer).appendChild(g);
+      });
+    }
+
+    // --- EVENTOS DEL RATÓN Y RUTEO ---
+    const canvasContainer = document.getElementById('canvasContainer');
+    
+    function handleNodeMouseDown(e, node) {
+      if(e.button !== 0) return;
+      
+      if(STATE.mode === 'select') {
+        selectNode(node);
+        STATE.dragNode = node;
+        const pt = getCanvasPt(e);
+        STATE.dragOffX = pt.x - node.x; STATE.dragOffY = pt.y - node.y;
+      } else if (STATE.mode === 'connect' || STATE.mode === 'pathway') {
+        if(!STATE.isRouting) {
+          STATE.isRouting = true; STATE.routeSourceId = node.id; STATE.routeWaypoints = [];
+          renderCanvasNodes();
+        } else if (STATE.routeSourceId !== node.id) {
+          // Finalizar Ruta
+          const t = document.getElementById('cableTypeSelect').value;
+          const newRoute = { id: 'r_'+Date.now(), from: STATE.routeSourceId, to: node.id, type: t, waypoints: [...STATE.routeWaypoints] };
+          if(LINE_STYLES[t].isPathway) STATE.pathways.push(newRoute); else STATE.connections.push(newRoute);
+          cancelRouting(); updateAll();
+        }
+      }
+    }
+
+    canvasContainer.addEventListener('mousedown', e => {
+      const target = e.target.id;
+      if(target === 'canvasContainer' || target === 'connectionsSvg' || target === 'nodesLayer' || target === 'canvasViewport') {
+        const pt = getCanvasPt(e);
         
-        return `
-          <g class="pathway-line" onclick="selectPathway('${p.id}')">
-            <path d="${pathD}" fill="none" stroke="transparent" stroke-width="25" />
-            <path d="${pathD}" fill="none" 
-                  stroke="${strokeColor}" 
-                  stroke-width="${cfg.strokeWidth || 4}" 
-                  stroke-linejoin="round" />
-          </g>
+        if(STATE.mode === 'calibrate') {
+          STATE.calibPoints.push(pt);
+          if(STATE.calibPoints.length === 1) {
+            const line = document.getElementById('calibrationLine');
+            line.setAttribute('x1', pt.x); line.setAttribute('y1', pt.y); line.setAttribute('x2', pt.x); line.setAttribute('y2', pt.y);
+            line.classList.remove('hidden');
+          } else {
+            const px = Math.hypot(pt.x - STATE.calibPoints[0].x, pt.y - STATE.calibPoints[0].y);
+            document.getElementById('calibPxSpan').innerText = Math.round(px);
+            STATE.calibMeasuredPx = px;
+            document.getElementById('modalCalibrate').classList.remove('hidden');
+          }
+          return;
+        }
+
+        if(STATE.isRouting) {
+          // Añadir esquina (waypoint) libre en el plano
+          STATE.routeWaypoints.push(pt);
+          updateTempLine(pt);
+          return;
+        }
+
+        deselectAll();
+        STATE.isPanning = true;
+        STATE.panStartX = e.clientX - STATE.panX;
+        STATE.panStartY = e.clientY - STATE.panY;
+      }
+    });
+
+    window.addEventListener('mousemove', e => {
+      const pt = getCanvasPt(e);
+      
+      if(STATE.isPanning) {
+        STATE.panX = e.clientX - STATE.panStartX; STATE.panY = e.clientY - STATE.panStartY;
+        updateTransform();
+      }
+      if(STATE.dragNode) {
+        STATE.dragNode.x = pt.x - STATE.dragOffX; STATE.dragNode.y = pt.y - STATE.dragOffY;
+        const el = document.getElementById(`html_${STATE.dragNode.id}`);
+        if(el) { el.style.left = `${STATE.dragNode.x}px`; el.style.top = `${STATE.dragNode.y}px`; }
+        renderVectors();
+      }
+      if(STATE.dragWp) {
+        STATE.dragWp.x = pt.x; STATE.dragWp.y = pt.y;
+        renderVectors(); updateMetrics();
+      }
+      if(STATE.isRouting && STATE.routeSourceId) {
+        updateTempLine(pt);
+      }
+      if(STATE.mode === 'calibrate' && STATE.calibPoints.length === 1) {
+        const line = document.getElementById('calibrationLine');
+        line.setAttribute('x2', pt.x); line.setAttribute('y2', pt.y);
+      }
+    });
+
+    window.addEventListener('mouseup', () => { STATE.isPanning = false; STATE.dragNode = null; STATE.dragWp = null; saveState(); });
+    
+    function getCanvasPt(e) {
+      const rect = canvasContainer.getBoundingClientRect();
+      return { x: (e.clientX - rect.left - STATE.panX) / STATE.zoom, y: (e.clientY - rect.top - STATE.panY) / STATE.zoom };
+    }
+
+    function updateTempLine(curPt) {
+      const n = STATE.nodes.find(x => x.id === STATE.routeSourceId);
+      if(!n) return;
+      const line = document.getElementById('tempRouteLine');
+      let pts = `${n.x},${n.y} `;
+      STATE.routeWaypoints.forEach(wp => pts += `${wp.x},${wp.y} `);
+      pts += `${curPt.x},${curPt.y}`;
+      line.setAttribute('points', pts);
+      line.classList.remove('hidden');
+    }
+
+    function cancelRouting() {
+      STATE.isRouting = false; STATE.routeSourceId = null; STATE.routeWaypoints = [];
+      document.getElementById('tempRouteLine')?.classList.add('hidden');
+      renderCanvasNodes();
+    }
+
+    // --- SELECCIÓN, INSPECTOR Y BORRADO ---
+    function selectNode(n) {
+      STATE.selNodeId = n.id; STATE.selConnId = null; STATE.selPathId = null;
+      document.getElementById('btnDelete').classList.remove('hidden');
+      document.getElementById('btnDuplicate').classList.remove('hidden');
+      renderCanvasNodes(); renderVectors();
+      
+      const def = LIB_DEFS[n.type];
+      document.getElementById('inspIcon').setAttribute('data-lucide', def.icon); lucide.createIcons();
+      document.getElementById('inspTitle').innerText = def.label;
+      document.getElementById('inspSubtitle').innerText = def.cat;
+      
+      let propsHtml = '';
+      for(let k in n.props) {
+        if(k === 'ports') continue;
+        propsHtml += `
+          <div><label class="block text-[10px] text-slate-400 mb-1 capitalize">${k}</label>
+          <input type="${typeof n.props[k]==='number'?'number':'text'}" value="${n.props[k]}" onchange="n.props['${k}'] = this.type==='number'?parseFloat(this.value):this.value; updateAll()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-xs text-slate-200 font-mono"></div>
         `;
-      }).join('');
+      }
+
+      document.getElementById('inspectorBody').innerHTML = `
+        <div class="space-y-3">
+          <div><label class="block text-[10px] text-slate-400 mb-1">Nombre / Identificador</label>
+          <input type="text" value="${n.name}" onchange="n.name=this.value; updateAll()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-xs text-slate-200"></div>
+          <div class="grid grid-cols-2 gap-2">${propsHtml}</div>
+          ${n.props.ports ? `<div class="p-2 bg-slate-900 border border-slate-800 rounded font-mono text-[9px] text-slate-400">Puertos:<br>${n.props.ports.join('<br>')}</div>` : ''}
+        </div>
+      `;
+    }
+
+    function selectRoute(route, isPathway) {
+      STATE.selPathId = isPathway ? route.id : null;
+      STATE.selConnId = !isPathway ? route.id : null;
+      STATE.selNodeId = null;
+      document.getElementById('btnDelete').classList.remove('hidden');
+      document.getElementById('btnDuplicate').classList.add('hidden');
+      renderCanvasNodes(); renderVectors();
+      
+      const style = LINE_STYLES[route.type];
+      document.getElementById('inspIcon').setAttribute('data-lucide', isPathway?'route':'cable'); lucide.createIcons();
+      document.getElementById('inspTitle').innerText = isPathway ? 'Canalización' : 'Cable / Enlace';
+      document.getElementById('inspSubtitle').innerText = style.label;
+      
+      document.getElementById('inspectorBody').innerHTML = `
+        <div class="space-y-3 p-3 bg-slate-900 border border-slate-800 rounded-lg">
+          <div class="text-[10px] text-slate-400 uppercase">Longitud Exacta</div>
+          <div class="text-lg font-mono font-bold text-sky-400">${route.lengthMeters.toFixed(2)} m</div>
+          <div class="pt-2 border-t border-slate-800 text-[10px] text-emerald-400">Norma: ${(route.lengthMeters * (isPathway?1.05:1.1)).toFixed(2)} m (+merma)</div>
+          <div class="pt-2 text-[10px] text-slate-400 font-mono italic">Arrastra los puntos blancos en el plano para curvar la ruta.</div>
+        </div>
+      `;
     }
 
     function deselectAll() {
-      APP_STATE.selectedNodeId = null;
-      APP_STATE.selectedConnId = null;
-      APP_STATE.selectedPathwayId = null;
-      
-      const b = document.getElementById('inspectorBody');
-      const d = document.getElementById('deleteSelectedBtnContainer');
-      if(d) d.classList.add('hidden');
-      
-      document.getElementById('inspIcon').innerText = '⚙️';
+      STATE.selNodeId = null; STATE.selConnId = null; STATE.selPathId = null;
+      document.getElementById('btnDelete').classList.add('hidden');
+      document.getElementById('btnDuplicate').classList.add('hidden');
+      document.getElementById('inspIcon').setAttribute('data-lucide', 'sliders-horizontal'); lucide.createIcons();
       document.getElementById('inspTitle').innerText = 'Propiedades';
-      document.getElementById('inspSubtitle').innerText = 'Selecciona un equipo o cable';
-      
-      if(b) b.innerHTML = `
-        <div class="text-center py-12 text-slate-500">
-          <svg class="w-10 h-10 mx-auto mb-2 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/></svg>
-          <p class="font-medium text-slate-400">Sin Selección</p>
-          <p class="text-[11px] mt-1 max-w-[200px] mx-auto">Haz clic en cualquier panel solar, inversor, switch o tubería para configurar sus parámetros.</p>
-        </div>
-      `;
-      
-      renderNodes();
-      renderConnections();
-      renderPathways();
-    }
-
-    function selectNode(id) {
-      APP_STATE.selectedNodeId = id;
-      APP_STATE.selectedConnId = null;
-      APP_STATE.selectedPathwayId = null;
-      
-      const node = APP_STATE.nodes.find(n => n.id === id);
-      if(!node) return;
-      
-      document.getElementById('inspIcon').innerText = node.icon;
-      document.getElementById('inspTitle').innerText = node.category;
-      document.getElementById('inspSubtitle').innerText = node.model;
-      document.getElementById('deleteSelectedBtnContainer').classList.remove('hidden');
-      
-      const isPV = node.category === 'Fotovoltaico' || node.category === 'BESS';
-      const isIT = node.category === 'Redes' || node.category === 'CCTV' || node.category === 'IoT' || node.category === 'Acceso';
-      
-      document.getElementById('inspectorBody').innerHTML = `
-        <div class="space-y-4">
-          <div>
-            <label class="block text-[11px] font-medium text-slate-400 mb-1">Nombre Identificador</label>
-            <input type="text" value="${node.name}" onchange="updateNodeProperty('${id}', 'name', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
-          </div>
-          ${isIT ? `
-            <div>
-              <label class="block text-[11px] font-medium text-slate-400 mb-1">Dirección IP</label>
-              <input type="text" value="${node.ipAddress || ''}" placeholder="Ej: 192.168.1.100" onchange="updateNodeProperty('${id}', 'ipAddress', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 font-mono">
-            </div>
-          ` : ''}
-          ${isPV ? `
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block text-[11px] font-medium text-slate-400 mb-1">Tensión Nominal</label>
-                <input type="text" value="${node.voltage || ''}" onchange="updateNodeProperty('${id}', 'voltage', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
-              </div>
-              <div>
-                <label class="block text-[11px] font-medium text-slate-400 mb-1">Potencia (Wp/W)</label>
-                <input type="number" value="${node.pvWp || 0}" onchange="updateNodeProperty('${id}', 'pvWp', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
-              </div>
-            </div>
-          ` : ''}
-        </div>
-      `;
-      renderNodes();
-    }
-
-    function selectConnection(id) {
-      APP_STATE.selectedConnId = id;
-      APP_STATE.selectedNodeId = null;
-      APP_STATE.selectedPathwayId = null;
-      
-      const conn = APP_STATE.connections.find(c => c.id === id);
-      if(!conn) return;
-      
-      const cfg = CABLE_CONFIGS[conn.type] || CABLE_CONFIGS.pv_dc;
-      
-      document.getElementById('inspIcon').innerText = '🔌';
-      document.getElementById('inspTitle').innerText = 'Cableado / Conexión';
-      document.getElementById('inspSubtitle').innerText = cfg.name;
-      document.getElementById('deleteSelectedBtnContainer').classList.remove('hidden');
-      
-      document.getElementById('inspectorBody').innerHTML = `
-        <div class="space-y-4">
-          <div>
-            <label class="block text-[11px] font-medium text-slate-400 mb-1">Etiqueta / Identificador</label>
-            <input type="text" value="${conn.label || ''}" onchange="updateConnProperty('${id}', 'label', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
-          </div>
-          <div>
-            <label class="block text-[11px] font-medium text-slate-400 mb-1">Longitud de Tirada (Mts)</label>
-            <input type="number" value="${conn.lengthMeters || 5}" onchange="updateConnProperty('${id}', 'lengthMeters', parseFloat(this.value))" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 font-mono">
-          </div>
-        </div>
-      `;
-      renderConnections();
-    }
-
-    function selectPathway(id) {
-      APP_STATE.selectedPathwayId = id;
-      APP_STATE.selectedNodeId = null;
-      APP_STATE.selectedConnId = null;
-      
-      const p = APP_STATE.pathways.find(x => x.id === id);
-      if (!p) return;
-
-      const src = APP_STATE.nodes.find(n => n.id === p.sourceId);
-      const tgt = APP_STATE.nodes.find(n => n.id === p.targetId);
-      const cfg = CABLE_CONFIGS[p.type] || CABLE_CONFIGS.conduit_emt_34;
-      const lengthMeters = calculatePathwayLength(p, src, tgt);
-
-      document.getElementById('inspIcon').innerText = '🏗️';
-      document.getElementById('inspTitle').innerText = 'Canalización';
-      document.getElementById('inspSubtitle').innerText = cfg.name;
-      document.getElementById('deleteSelectedBtnContainer').classList.remove('hidden');
-
-      document.getElementById('inspectorBody').innerHTML = `
-        <div class="space-y-4">
-          <div>
-            <label class="block text-[11px] font-medium text-slate-400 mb-1">Trazado / Ruteo</label>
-            <select onchange="updatePathwayProperty('${p.id}', 'routing', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200">
-              <option value="orthogonal" ${p.routing === 'orthogonal' ? 'selected' : ''}>Ortogonal (Escuadra)</option>
-              <option value="direct" ${p.routing === 'direct' ? 'selected' : ''}>Directo</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-[11px] font-medium text-slate-400 mb-1">Etiqueta</label>
-            <input type="text" value="${p.label || ''}" onchange="updatePathwayProperty('${p.id}', 'label', this.value)" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 font-mono">
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-[11px] font-medium text-slate-400 mb-1">Long. Neta</label>
-              <div class="text-cyan-400 font-mono text-sm py-1 font-bold">${lengthMeters.toFixed(1)} m</div>
-            </div>
-            <div>
-              <label class="block text-[11px] font-medium text-slate-400 mb-1">Con Merma</label>
-              <div class="text-emerald-400 font-mono text-sm py-1 font-bold">${(lengthMeters * 1.05).toFixed(1)} m</div>
-            </div>
-          </div>
-          <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-[11px] text-slate-400 space-y-1">
-            <div class="text-slate-300 font-semibold text-[10px] uppercase">Cálculo TIA-569 / NEC</div>
-            <div>• Tubos (3m): <span class="text-slate-100 font-mono">${Math.ceil((lengthMeters * 1.05) / 3)} u</span></div>
-            <div>• Coples: <span class="text-slate-100 font-mono">${Math.max(1, Math.ceil(lengthMeters / 3))} u</span></div>
-            <div>• Abrazaderas: <span class="text-slate-100 font-mono">${Math.ceil(lengthMeters / 1.5) + 1} u</span></div>
-          </div>
-        </div>
-      `;
-      renderPathways();
-    }
-
-    function updateNodeProperty(id, prop, val) {
-      const node = APP_STATE.nodes.find(n => n.id === id);
-      if (node) {
-        node[prop] = val;
-        updateMetrics();
-        renderNodes();
-      }
-    }
-
-    function updateConnProperty(id, prop, val) {
-      const conn = APP_STATE.connections.find(c => c.id === id);
-      if (conn) {
-        conn[prop] = val;
-        renderConnections();
-      }
-    }
-
-    function updatePathwayProperty(id, prop, val) {
-      const p = APP_STATE.pathways.find(x => x.id === id);
-      if (p) {
-        p[prop] = val;
-        renderPathways();
-        selectPathway(id);
-        updateMetrics();
-      }
+      document.getElementById('inspectorBody').innerHTML = `<div class="text-center py-12 text-slate-500"><p class="font-medium text-slate-400">Sin Selección</p></div>`;
+      renderCanvasNodes(); renderVectors();
     }
 
     function deleteSelected() {
-      if (APP_STATE.selectedNodeId) {
-        APP_STATE.nodes = APP_STATE.nodes.filter(n => n.id !== APP_STATE.selectedNodeId);
-        APP_STATE.connections = APP_STATE.connections.filter(c => c.sourceId !== APP_STATE.selectedNodeId && c.targetId !== APP_STATE.selectedNodeId);
-        APP_STATE.pathways = APP_STATE.pathways.filter(p => p.sourceId !== APP_STATE.selectedNodeId && p.targetId !== APP_STATE.selectedNodeId);
-      } else if (APP_STATE.selectedConnId) {
-        APP_STATE.connections = APP_STATE.connections.filter(c => c.id !== APP_STATE.selectedConnId);
-      } else if (APP_STATE.selectedPathwayId) {
-        APP_STATE.pathways = APP_STATE.pathways.filter(p => p.id !== APP_STATE.selectedPathwayId);
+      if(STATE.selNodeId) {
+        STATE.nodes = STATE.nodes.filter(n => n.id !== STATE.selNodeId);
+        STATE.connections = STATE.connections.filter(c => c.from !== STATE.selNodeId && c.to !== STATE.selNodeId);
+        STATE.pathways = STATE.pathways.filter(c => c.from !== STATE.selNodeId && c.to !== STATE.selNodeId);
+      } else if (STATE.selConnId) {
+        STATE.connections = STATE.connections.filter(c => c.id !== STATE.selConnId);
+      } else if (STATE.selPathId) {
+        STATE.pathways = STATE.pathways.filter(p => p.id !== STATE.selPathId);
       }
-      deselectAll();
-      updateMetrics();
-      showToast('Elemento eliminado', '🗑️');
+      deselectAll(); updateAll(); showToast('Eliminado');
     }
 
-    function calculatePathwayLength(pathway, src, tgt) {
-      if (!src || !tgt) return 0;
-      const dx = Math.abs(tgt.x - src.x);
-      const dy = Math.abs(tgt.y - src.y);
-      let pxDist = pathway.routing === 'direct' ? Math.sqrt(dx*dx + dy*dy) : (dx + dy);
-      return pxDist * APP_STATE.scaleMetersPerPixel;
+    function duplicateSelected() {
+      if(!STATE.selNodeId) return;
+      const n = STATE.nodes.find(x => x.id === STATE.selNodeId);
+      if(!n) return;
+      const copy = JSON.parse(JSON.stringify(n));
+      copy.id = 'n_' + Date.now();
+      copy.x += 40; copy.y += 40;
+      copy.name += ' (Copia)';
+      STATE.nodes.push(copy);
+      selectNode(copy);
+      updateAll(); showToast('Duplicado');
+    }
+
+    // --- TECLADO, ZOOM, PLANOS PDF ---
+    function setupKeyboard() {
+      window.addEventListener('keydown', e => {
+        if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
+        if(e.key==='Delete'||e.key==='Backspace') deleteSelected();
+        if(e.key==='Escape') setMode('select');
+        if(e.key==='v'||e.key==='V') setMode('select');
+        if(e.key==='c'||e.key==='C') setMode('connect');
+        if(e.key==='p'||e.key==='P') setMode('pathway');
+      });
+    }
+
+    function zoomCanvas(d) { STATE.zoom = Math.max(0.2, Math.min(4, STATE.zoom + d)); updateTransform(); }
+    function resetZoom() { STATE.zoom = 1; STATE.panX = 40; STATE.panY = 40; updateTransform(); }
+    function updateTransform() {
+      document.getElementById('canvasViewport').style.transform = `translate(${STATE.panX}px, ${STATE.panY}px) scale(${STATE.zoom})`;
+      document.getElementById('zoomText').innerText = `${Math.round(STATE.zoom*100)}%`;
+    }
+
+    async function handlePlanUpload(e) {
+      const file = e.target.files[0];
+      if(!file) return;
+      if(file.type === 'application/pdf') {
+        const url = URL.createObjectURL(file);
+        const pdf = await pdfjsLib.getDocument(url).promise;
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({scale: 2.5});
+        const cvs = document.getElementById('pdfCanvas');
+        cvs.width = viewport.width; cvs.height = viewport.height;
+        await page.render({canvasContext: cvs.getContext('2d'), viewport}).promise;
+        setBgImage(cvs.toDataURL('image/png'));
+      } else {
+        const reader = new FileReader();
+        reader.onload = (evt) => setBgImage(evt.target.result);
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function setBgImage(url) {
+      STATE.bgImage = url;
+      const img = document.getElementById('floorPlanImg');
+      img.src = url; img.onload = () => { document.getElementById('floorPlanWrapper').classList.remove('hidden'); document.getElementById('planControlBar').classList.remove('hidden'); saveState(); };
+    }
+    function changePlanOpacity(v) { STATE.bgOpacity = v/100; document.getElementById('floorPlanImg').style.opacity = STATE.bgOpacity; }
+    function removeFloorPlan() { STATE.bgImage = null; document.getElementById('floorPlanWrapper').classList.add('hidden'); document.getElementById('planControlBar').classList.add('hidden'); saveState(); }
+
+    // --- CALIBRACIÓN Y MÉTRICAS ---
+    function startScaleCalibration() {
+      setMode('calibrate'); STATE.calibPoints = [];
+      document.getElementById('calibrationLine').classList.add('hidden');
+      showToast('Clic en inicio y fin de una cota del plano');
+    }
+    function cancelCalibration() { document.getElementById('modalCalibrate').classList.add('hidden'); document.getElementById('calibrationLine').classList.add('hidden'); setMode('select'); }
+    function applyCalibration() {
+      const m = parseFloat(document.getElementById('calibMetersInput').value);
+      if(m>0 && STATE.calibMeasuredPx>0) {
+        STATE.scaleMetersPerPx = m / STATE.calibMeasuredPx;
+        document.getElementById('scaleLabelText').innerText = `1m = ${Math.round(1/STATE.scaleMetersPerPx)}px`;
+        updateAll();
+      }
+      cancelCalibration();
     }
 
     function updateMetrics() {
-      let poeTotal = 0, pvTotalWp = 0, bessTotal = 0, pathwayMeters = 0;
-      APP_STATE.nodes.forEach(n => {
-        poeTotal += parseFloat(n.poeWatts || 0);
-        pvTotalWp += parseFloat(n.pvWp || 0);
-        bessTotal += parseFloat(n.bessKwh || 0);
-      });
-      APP_STATE.pathways.forEach(p => {
-        const src = APP_STATE.nodes.find(n => n.id === p.sourceId);
-        const tgt = APP_STATE.nodes.find(n => n.id === p.targetId);
-        pathwayMeters += calculatePathwayLength(p, src, tgt);
-      });
-
-      const elPoe = document.getElementById('metricPoeTotal');
-      const elPv = document.getElementById('metricPvTotal');
-      const elBess = document.getElementById('metricBessTotal');
-      const elPw = document.getElementById('metricPathwaysTotal');
-      const elPvDaily = document.getElementById('metricPvDaily');
-      
-      const pvKwp = pvTotalWp / 1000;
-      const dailySolarKwh = pvKwp * 5.0 * 0.8;
-      
-      if(elPoe) elPoe.innerText = `${poeTotal} W`;
-      if(elPv) elPv.innerText = `${pvKwp.toFixed(2)} kWp`;
-      if(elPvDaily) elPvDaily.innerText = `${dailySolarKwh.toFixed(1)} kWh/d`;
-      if(elBess) elBess.innerText = `${bessTotal.toFixed(2)} kWh`;
-      if(elPw) elPw.innerText = `${pathwayMeters.toFixed(1)} m`;
+      let pv=0, bess=0, poe=0, path=0;
+      STATE.nodes.forEach(n => { pv+=n.props.pvWp||0; bess+=n.props.bessKwh||0; poe+=n.props.poeWatts||0; });
+      STATE.pathways.forEach(p => path+=p.lengthMeters||0);
+      document.getElementById('metPv').innerText = `${(pv/1000).toFixed(2)} kWp`;
+      document.getElementById('metBess').innerText = `${bess.toFixed(1)} kWh`;
+      document.getElementById('metPoe').innerText = `${poe} W`;
+      document.getElementById('metPath').innerText = `${path.toFixed(1)} m`;
     }
 
-    function handleNodeMouseDown(e, nodeId) {
-      if (APP_STATE.interactionMode === 'select') {
-        APP_STATE.isDraggingNode = true;
-        APP_STATE.draggedNodeId = nodeId;
-        const node = APP_STATE.nodes.find(n => n.id === nodeId);
-        const rect = document.getElementById('canvasContainer').getBoundingClientRect();
-        const mouseX = (e.clientX - rect.left - APP_STATE.panX) / APP_STATE.zoom;
-        const mouseY = (e.clientY - rect.top - APP_STATE.panY) / APP_STATE.zoom;
-        APP_STATE.dragOffsetX = mouseX - node.x;
-        APP_STATE.dragOffsetY = mouseY - node.y;
-        selectNode(nodeId);
-      }
-    }
-
-    function handleNodeClick(e, nodeId) {
-      if (APP_STATE.interactionMode === 'connect' || APP_STATE.interactionMode === 'pathway') {
-        handleNodeConnectClick(nodeId);
-      } else {
-        selectNode(nodeId);
-      }
-    }
-
-    function handleNodeConnectClick(nodeId) {
-      if (APP_STATE.interactionMode === 'connect') {
-        if (!APP_STATE.connectingSourceNodeId) {
-          APP_STATE.connectingSourceNodeId = nodeId;
-          renderNodes();
-          showToast('Selecciona el nodo destino', '🔌');
-        } else if (APP_STATE.connectingSourceNodeId !== nodeId) {
-          const type = document.getElementById('cableTypeSelect')?.value || 'pv_dc';
-          APP_STATE.connections.push({
-            id: 'conn_' + Date.now(),
-            sourceId: APP_STATE.connectingSourceNodeId,
-            targetId: nodeId,
-            type: CABLE_CONFIGS[type]?.type === 'cable' ? type : 'pv_dc',
-            lengthMeters: 5,
-            label: 'Cable'
-          });
-          APP_STATE.connectingSourceNodeId = null;
-          document.getElementById('tempCableLine')?.classList.add('hidden');
-          renderConnections();
-          renderNodes();
-          updateMetrics();
-          showToast('Conectado', '✅');
-        }
-      } else if (APP_STATE.interactionMode === 'pathway') {
-        if (!APP_STATE.pathwaySourceNodeId) {
-          APP_STATE.pathwaySourceNodeId = nodeId;
-          renderNodes();
-          showToast('Selecciona destino de canalización', '🏗️');
-        } else if (APP_STATE.pathwaySourceNodeId !== nodeId) {
-          const type = document.getElementById('cableTypeSelect')?.value || 'conduit_emt_34';
-          APP_STATE.pathways.push({
-            id: 'pw_' + Date.now(),
-            sourceId: APP_STATE.pathwaySourceNodeId,
-            targetId: nodeId,
-            type: CABLE_CONFIGS[type]?.type === 'pathway' ? type : 'conduit_emt_34',
-            routing: 'orthogonal',
-            label: 'Canalización'
-          });
-          APP_STATE.pathwaySourceNodeId = null;
-          document.getElementById('tempCableLine')?.classList.add('hidden');
-          renderPathways();
-          renderNodes();
-          updateMetrics();
-          showToast('Canalización trazada', '✅');
-        }
-      }
-    }
-
-    const canvasContainer = document.getElementById('canvasContainer');
-    
-    canvasContainer.addEventListener('mousedown', (e) => {
-      if (e.target === canvasContainer || e.target.id === 'connectionsSvg' || e.target.id === 'nodesLayer' || e.target.id === 'canvasViewport') {
-        deselectAll();
-        APP_STATE.isPanning = true;
-        APP_STATE.panStartX = e.clientX - APP_STATE.panX;
-        APP_STATE.panStartY = e.clientY - APP_STATE.panY;
-      }
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      const rect = canvasContainer.getBoundingClientRect();
-      const canvasMouseX = (e.clientX - rect.left - APP_STATE.panX) / APP_STATE.zoom;
-      const canvasMouseY = (e.clientY - rect.top - APP_STATE.panY) / APP_STATE.zoom;
-
-      if (APP_STATE.isPanning) {
-        APP_STATE.panX = e.clientX - APP_STATE.panStartX;
-        APP_STATE.panY = e.clientY - APP_STATE.panStartY;
-        updateCanvasTransform();
-        return;
-      }
-
-      if (APP_STATE.isDraggingNode && APP_STATE.draggedNodeId) {
-        const node = APP_STATE.nodes.find(n => n.id === APP_STATE.draggedNodeId);
-        if (node) {
-          let tx = canvasMouseX - APP_STATE.dragOffsetX;
-          let ty = canvasMouseY - APP_STATE.dragOffsetY;
-          if (APP_STATE.snapToGrid) {
-            tx = Math.round(tx / APP_STATE.gridSize) * APP_STATE.gridSize;
-            ty = Math.round(ty / APP_STATE.gridSize) * APP_STATE.gridSize;
-          }
-          node.x = Math.max(0, tx);
-          node.y = Math.max(0, ty);
-          document.getElementById(`node-${node.id}`).style.left = `${node.x}px`;
-          document.getElementById(`node-${node.id}`).style.top = `${node.y}px`;
-          renderConnections();
-          renderPathways();
-        }
-        return;
-      }
-
-      const activeId = APP_STATE.connectingSourceNodeId || APP_STATE.pathwaySourceNodeId;
-      if (activeId) {
-        const src = APP_STATE.nodes.find(n => n.id === activeId);
-        const tempLine = document.getElementById('tempCableLine');
-        if (src && tempLine) {
-          tempLine.setAttribute('x1', src.x + 96);
-          tempLine.setAttribute('y1', src.y + 45);
-          tempLine.setAttribute('x2', canvasMouseX);
-          tempLine.setAttribute('y2', canvasMouseY);
-          tempLine.classList.remove('hidden');
-        }
-      }
-    });
-
-    window.addEventListener('mouseup', () => {
-      APP_STATE.isPanning = false;
-      APP_STATE.isDraggingNode = false;
-      APP_STATE.draggedNodeId = null;
-    });
-
-    canvasContainer.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      zoomCanvas(e.deltaY < 0 ? 0.08 : -0.08);
-    }, { passive: false });
-    
-    window.addEventListener('keydown', (e) => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
-      if (e.key === 'v' || e.key === 'V') setInteractionMode('select');
-      if (e.key === 'c' || e.key === 'C') setInteractionMode('connect');
-      if (e.key === 'p' || e.key === 'P') setInteractionMode('pathway');
-      if (e.key === 'Delete' || e.key === 'Backspace') deleteSelected();
-      if (e.key === 'Escape') {
-        APP_STATE.connectingSourceNodeId = null;
-        APP_STATE.pathwaySourceNodeId = null;
-        document.getElementById('tempCableLine')?.classList.add('hidden');
-        deselectAll();
-      }
-    });
-
+    // --- BOM Y EXPORTACIÓN ---
     function openBomModal() {
-      const devTbody = document.getElementById('bomDevicesTable');
-      const pwTbody = document.getElementById('bomPathwaysTable');
-      const cabTbody = document.getElementById('bomCablesTable');
+      document.getElementById('modalBOM').classList.remove('hidden');
       
-      const counts = {};
-      APP_STATE.nodes.forEach(n => { counts[n.typeKey] = (counts[n.typeKey] || 0) + 1; });
-      
-      devTbody.innerHTML = Object.entries(counts).map(([type, qty]) => {
-        const def = COMPONENT_DEFINITIONS[type];
-        return `<tr><td class="p-2 text-emerald-400 font-bold font-mono">${qty}</td><td class="p-2">${def.category}</td><td class="p-2 text-slate-100 font-medium">${def.label}</td><td class="p-2 text-slate-400">${def.model}</td><td class="p-2 text-[10px] text-slate-500 font-mono">${def.voltage || ''}</td></tr>`;
-      }).join('') || '<tr><td colspan="5" class="p-4 text-center text-slate-500">Vacío</td></tr>';
-      
-      cabTbody.innerHTML = APP_STATE.connections.map(c => {
-        const src = APP_STATE.nodes.find(n => n.id === c.sourceId);
-        const tgt = APP_STATE.nodes.find(n => n.id === c.targetId);
-        const cfg = CABLE_CONFIGS[c.type];
-        const netM = c.lengthMeters || 5;
-        return `<tr><td class="p-2 text-slate-200 font-medium">${cfg?.name || 'Cable'}</td><td class="p-2 text-slate-400">${src?.name || '?'}</td><td class="p-2 text-slate-400">${tgt?.name || '?'}</td><td class="p-2 text-sky-300 font-mono">${netM} m</td><td class="p-2 text-emerald-400 font-bold font-mono">${(netM*1.1).toFixed(1)} m</td><td class="p-2 text-slate-500 font-mono text-[10px]">${c.label || ''}</td></tr>`;
-      }).join('') || '<tr><td colspan="6" class="p-4 text-center text-slate-500">Sin enlaces</td></tr>';
-
-      let totalPathwayMeters = 0;
-      const pwGroups = {};
-      APP_STATE.pathways.forEach(p => {
-        const src = APP_STATE.nodes.find(n => n.id === p.sourceId);
-        const tgt = APP_STATE.nodes.find(n => n.id === p.targetId);
-        const netLength = calculatePathwayLength(p, src, tgt);
-        totalPathwayMeters += netLength;
-        const cfg = CABLE_CONFIGS[p.type] || CABLE_CONFIGS.conduit_emt_34;
-        if (!pwGroups[p.type]) pwGroups[p.type] = { name: cfg.name, len: 0 };
-        pwGroups[p.type].len += netLength;
+      const tNodes = document.getElementById('bomTableNodes');
+      const grouped = {};
+      STATE.nodes.forEach(n => {
+        const k = n.type;
+        if(!grouped[k]) grouped[k] = {c:0, cat:LIB_DEFS[k].cat, lbl:LIB_DEFS[k].label, spc: (n.props.voltage||'') + ' ' + (n.props.pvWp?n.props.pvWp+'W':'') };
+        grouped[k].c++;
       });
+      tNodes.innerHTML = Object.values(grouped).map(g => `<tr class="hover:bg-slate-800">
+        <td class="p-2 font-mono text-emerald-400 font-bold">${g.c}</td><td class="p-2">${g.cat}</td><td class="p-2">${g.lbl}</td><td class="p-2 text-slate-400 font-mono text-[10px]">${g.spc}</td>
+      </tr>`).join('');
+      document.getElementById('bomCountNodes').innerText = STATE.nodes.length + ' items';
 
-      pwTbody.innerHTML = Object.entries(pwGroups).map(([type, data]) => {
-        const withWaste = data.len * 1.05;
-        return `<tr><td class="p-2 text-slate-100 font-medium">${data.name}</td><td class="p-2 text-slate-400 text-[10px]">Tramos 3.0m</td><td class="p-2 text-cyan-300 font-mono font-semibold">${data.len.toFixed(1)} m</td><td class="p-2 text-emerald-400 font-bold font-mono">${withWaste.toFixed(1)} m (${Math.ceil(withWaste/3)} tubos)</td><td class="p-2 text-[11px] text-slate-400">${Math.ceil(data.len/3)} coples</td></tr>`;
-      }).join('') || '<tr><td colspan="5" class="p-4 text-center text-slate-500">Sin vías</td></tr>';
+      const tPaths = document.getElementById('bomTablePathways');
+      const pGroups = {}; let pTot = 0;
+      STATE.pathways.forEach(p => {
+        if(!pGroups[p.type]) pGroups[p.type] = {len:0, name:LINE_STYLES[p.type].label};
+        pGroups[p.type].len += p.lengthMeters; pTot += p.lengthMeters;
+      });
+      tPaths.innerHTML = Object.values(pGroups).map(g => {
+        const merma = g.len*1.05; const tubos = Math.ceil(merma/3); const abrazaderas = Math.ceil(g.len/1.5);
+        return `<tr class="hover:bg-slate-800">
+          <td class="p-2 font-medium">${g.name}</td><td class="p-2 text-cyan-400">${g.len.toFixed(1)}m</td><td class="p-2 text-emerald-400 font-bold">${merma.toFixed(1)}m</td>
+          <td class="p-2 text-slate-400 font-mono text-[10px]">${tubos} tubos 3m • ${abrazaderas} soportes</td>
+        </tr>`;
+      }).join('');
+      document.getElementById('bomCountPathways').innerText = pTot.toFixed(1) + ' m';
 
-      document.getElementById('bomDevicesCount').innerText = APP_STATE.nodes.length + ' items';
-      document.getElementById('bomCablesCount').innerText = APP_STATE.connections.length + ' enlaces';
-      document.getElementById('bomPathwaysCount').innerText = totalPathwayMeters.toFixed(1) + ' m total';
-      document.getElementById('bomModal').classList.remove('hidden');
+      const tCables = document.getElementById('bomTableCables');
+      tCables.innerHTML = STATE.connections.map(c => {
+        const n1=STATE.nodes.find(x=>x.id===c.from); const n2=STATE.nodes.find(x=>x.id===c.to);
+        return `<tr class="hover:bg-slate-800"><td class="p-2">${LINE_STYLES[c.type].label}</td><td class="p-2 text-slate-400">${n1?.name} ➔ ${n2?.name}</td><td class="p-2 text-slate-400">-</td><td class="p-2 text-sky-400 font-bold">${(c.lengthMeters*1.1).toFixed(1)}m</td></tr>`;
+      }).join('');
+      document.getElementById('bomCountCables').innerText = STATE.connections.length + ' enlaces';
+    }
+
+    function exportBomCSV() {
+      let csv = 'Categoria,Elemento,Detalle,Cant/Longitud_Neta,Cant_Con_Merma\n';
+      STATE.nodes.forEach(n => csv+=`Equipos,${LIB_DEFS[n.type].cat},${n.name},1,1\n`);
+      STATE.pathways.forEach(p => csv+=`Canalizacion,${LINE_STYLES[p.type].label},Tramo,${p.lengthMeters.toFixed(2)},${(p.lengthMeters*1.05).toFixed(2)}\n`);
+      STATE.connections.forEach(c => csv+=`Cableado,${LINE_STYLES[c.type].label},Enlace,${c.lengthMeters.toFixed(2)},${(c.lengthMeters*1.1).toFixed(2)}\n`);
+      const blob = new Blob([csv], {type: 'text/csv'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'BOM_TechDiagram.csv'; a.click();
+    }
+
+    function exportBomPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'pt', 'a4');
+      const pageWidth = doc.internal.pageSize.getWidth();
+      
+      // Header y Logo
+      if(STATE.projectConfig.logoDataUrl) doc.addImage(STATE.projectConfig.logoDataUrl, 'PNG', 40, 30, 80, 40, '', 'FAST');
+      doc.setFontSize(18); doc.setTextColor(40);
+      doc.text("TechDiagram Pro - Cómputo de Materiales", 130, 45);
+      doc.setFontSize(12); doc.setTextColor(100);
+      doc.text(`Proyecto: ${STATE.projectConfig.name}`, 130, 65);
+      doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 130, 80);
+
+      let yPos = 110;
+
+      // Generar arrays para jsPDF-AutoTable parseando el DOM
+      const parseTable = (id) => {
+        const rows = [];
+        document.querySelectorAll(`#${id} tr`).forEach(tr => {
+          const cells = Array.from(tr.querySelectorAll('th, td')).map(td => td.innerText);
+          if(cells.length>0) rows.push(cells);
+        });
+        return { head: [rows[0]], body: rows.slice(1) };
+      };
+
+      const nodesData = parseTable('bomTableNodes');
+      doc.setFontSize(14); doc.setTextColor(0); doc.text("Equipos y Dispositivos", 40, yPos);
+      doc.autoTable({ startY: yPos+10, head: nodesData.head, body: nodesData.body, styles: { fontSize: 9 }, headStyles: { fillColor: [79, 70, 229] } });
+      yPos = doc.lastAutoTable.finalY + 30;
+
+      const pathData = parseTable('bomTablePathways');
+      doc.setFontSize(14); doc.text("Canalizaciones y Soportes (TIA-569)", 40, yPos);
+      doc.autoTable({ startY: yPos+10, head: pathData.head, body: pathData.body, styles: { fontSize: 9 }, headStyles: { fillColor: [8, 145, 178] } });
+      yPos = doc.lastAutoTable.finalY + 30;
+
+      const cableData = parseTable('bomTableCables');
+      if(yPos > 700) { doc.addPage(); yPos = 40; }
+      doc.setFontSize(14); doc.text("Cableado y Enlaces (Incluye Holgura 10%)", 40, yPos);
+      doc.autoTable({ startY: yPos+10, head: cableData.head, body: cableData.body, styles: { fontSize: 9 }, headStyles: { fillColor: [2, 132, 199] } });
+
+      doc.save(`BOM_${STATE.projectConfig.name.replace(/\s+/g, '_')}.pdf`);
+      showToast('BOM Exportado a PDF Exitosamente');
+    }
+
+    // --- PROYECTOS Y CALCULADORA SOLAR ---
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    function openProjectManager() { document.getElementById('modalProjects').classList.remove('hidden'); renderLocalProjects(); }
+    
+    function saveProjectToLocal() {
+      const db = JSON.parse(localStorage.getItem('techdiag_db') || '{}');
+      const name = STATE.projectConfig.name;
+      db[name] = { date: new Date().toLocaleString(), data: { nodes: STATE.nodes, connections: STATE.connections, pathways: STATE.pathways, projectConfig: STATE.projectConfig } };
+      localStorage.setItem('techdiag_db', JSON.stringify(db));
+      showToast('Guardado Local'); renderLocalProjects();
     }
     
-    function closeBomModal() { document.getElementById('bomModal').classList.add('hidden'); }
-    function exportBomCSV() { showToast('Cómputo Exportado CSV', '💾'); closeBomModal(); }
-
-    function openPvCalculatorModal() { document.getElementById('pvCalculatorModal').classList.remove('hidden'); runPvCalculations(); }
-    function closePvCalculatorModal() { document.getElementById('pvCalculatorModal').classList.add('hidden'); }
-    function runPvCalculations() {
-      const modCount = parseInt(document.getElementById('calcPvModulesCount').value) || 12;
-      const wp = parseFloat(document.getElementById('calcPvModuleWp').value) || 580;
-      const voc = parseFloat(document.getElementById('calcPvVoc').value) || 51.2;
-      const vmp = parseFloat(document.getElementById('calcPvVmp').value) || 43.1;
-      const isc = parseFloat(document.getElementById('calcPvIsc').value) || 14.2;
-      
-      const vocMax = voc * modCount * 1.15;
-      const amp = isc * 1.56;
-      
-      document.getElementById('calcResVocMax').innerText = vocMax.toFixed(1) + ' V';
-      document.getElementById('calcResVmpTotal').innerText = (vmp * modCount).toFixed(1) + ' V';
-      document.getElementById('calcResAmpacity').innerText = amp.toFixed(1) + ' A';
-      document.getElementById('calcResEnergyDaily').innerText = ((modCount * wp / 1000) * 5 * 0.8).toFixed(1) + ' kWh/d';
-      
-      const statusEl = document.getElementById('calcResVocStatus');
-      if (vocMax > 1000) {
-        statusEl.innerHTML = `<span class="text-amber-400 font-bold">⚠️ Excede 1000V DC:</span> Requiere inversor 1500V.`;
-      } else {
-        statusEl.innerHTML = `<span class="text-emerald-400 font-semibold">✓ Compatible 1000V DC.</span>`;
+    function renderLocalProjects() {
+      const db = JSON.parse(localStorage.getItem('techdiag_db') || '{}');
+      const lst = document.getElementById('localProjectsList');
+      lst.innerHTML = Object.keys(db).map(k => `
+        <div class="flex justify-between items-center bg-slate-800 p-3 rounded-lg border border-slate-700">
+          <div><div class="font-bold text-slate-200 text-sm">${k}</div><div class="text-[10px] text-slate-500">${db[k].date}</div></div>
+          <div class="flex gap-2">
+            <button onclick="loadLocalProj('${k}')" class="px-3 py-1.5 bg-indigo-600 text-white rounded text-xs">Cargar</button>
+            <button onclick="delLocalProj('${k}')" class="px-2 py-1.5 bg-red-900/50 text-red-400 rounded text-xs"><i data-lucide="trash" class="w-3 h-3"></i></button>
+          </div>
+        </div>
+      `).join('') || '<div class="text-slate-500 text-xs">No hay proyectos guardados.</div>';
+      lucide.createIcons();
+    }
+    
+    function loadLocalProj(k) {
+      const db = JSON.parse(localStorage.getItem('techdiag_db') || '{}');
+      if(db[k]) {
+        STATE.nodes = db[k].data.nodes; STATE.connections = db[k].data.connections; STATE.pathways = db[k].data.pathways; STATE.projectConfig = db[k].data.projectConfig;
+        document.getElementById('projectName').value = STATE.projectConfig.name;
+        if(STATE.projectConfig.logoDataUrl) {
+          const img = document.getElementById('projectLogoImg'); img.src = STATE.projectConfig.logoDataUrl; img.classList.remove('hidden'); document.getElementById('projectLogoIcon').classList.add('hidden');
+        }
+        updateAll(); closeModal('modalProjects'); showToast('Proyecto Cargado');
       }
     }
+    function delLocalProj(k) { const db = JSON.parse(localStorage.getItem('techdiag_db') || '{}'); delete db[k]; localStorage.setItem('techdiag_db', JSON.stringify(db)); renderLocalProjects(); }
 
-    function openProjectManager() { document.getElementById('projectManagerModal').classList.remove('hidden'); }
-    function closeProjectManager() { document.getElementById('projectManagerModal').classList.add('hidden'); }
-    function saveCurrentProjectPrompt() { showToast("¡Proyecto guardado localmente exitosamente!", '💾'); }
-    
-    function openUserManualModal() { document.getElementById('userManualModal').classList.remove('hidden'); }
-    function closeUserManualModal() { document.getElementById('userManualModal').classList.add('hidden'); }
-    
-    function clearCanvas() {
-      APP_STATE.nodes = [];
-      APP_STATE.connections = [];
-      APP_STATE.pathways = [];
-      deselectAll();
-      updateMetrics();
-      showToast('Lienzo vaciado', '🗑️');
+    function exportProjectJSON() {
+      const blob = new Blob([JSON.stringify({ nodes: STATE.nodes, connections: STATE.connections, pathways: STATE.pathways, projectConfig: STATE.projectConfig })], {type: 'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${STATE.projectConfig.name}.json`; a.click();
+    }
+    function importProjectJSON(e) {
+      const file = e.target.files[0]; if(!file) return;
+      const reader = new FileReader(); reader.onload = (evt) => {
+        const d = JSON.parse(evt.target.result);
+        STATE.nodes = d.nodes||[]; STATE.connections = d.connections||[]; STATE.pathways = d.pathways||[]; STATE.projectConfig = d.projectConfig||{name:"Proyecto Importado", logoDataUrl:null};
+        document.getElementById('projectName').value = STATE.projectConfig.name;
+        updateAll(); closeModal('modalProjects');
+      }; reader.readAsText(file);
     }
 
-    window.onload = function() {
-      updateCanvasTransform();
-      updateMetrics();
-      if (!localStorage.getItem('techdiagram_manual_seen')) {
-        openUserManualModal();
-        localStorage.setItem('techdiagram_manual_seen', 'true');
-      }
-    };
+    function openPvCalculatorModal() { document.getElementById('modalSolar').classList.remove('hidden'); runSolarCalc(); }
+    function runSolarCalc() {
+      const n = +document.getElementById('calcSolarN').value; const t = +document.getElementById('calcSolarTmin').value;
+      const voc = +document.getElementById('calcSolarVoc').value; const isc = +document.getElementById('calcSolarIsc').value;
+      const vocMax = voc * n * (1 + (25 - t) * 0.0028);
+      document.getElementById('resVoc').innerText = vocMax.toFixed(1) + ' V';
+      document.getElementById('resAmp').innerText = (isc * 1.56).toFixed(1) + ' A';
+    }
   </script>
 </body>
 </html>
