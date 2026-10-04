@@ -8,14 +8,14 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Lucide Icons (Vectoriales Modernos) -->
+  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   
-  <!-- PDF.js para cargar Planos de Arquitectura -->
+  <!-- PDF.js para cargar Planos -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
 
-  <!-- jsPDF y AutoTable para Exportar BOM a PDF -->
+  <!-- jsPDF y AutoTable para Exportar BOM/ROI a PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
@@ -61,7 +61,6 @@
 </head>
 <body class="h-full bg-slate-900 text-slate-100 flex flex-col overflow-hidden">
 
-  <!-- HEADER & TOOLBAR PRINCIPAL -->
   <header class="h-14 border-b border-slate-800 bg-slate-950 flex items-center justify-between px-3 shrink-0 z-20">
     <div class="flex items-center gap-3">
       <button onclick="toggleSidebar('leftSidebar')" class="p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition" title="Ocultar/Mostrar Librería">
@@ -70,6 +69,7 @@
 
       <div class="h-6 w-px bg-slate-800 mx-1"></div>
 
+      <!-- Input Logo -->
       <label class="cursor-pointer group flex items-center justify-center w-8 h-8 rounded-lg bg-slate-900 border border-slate-700 hover:border-indigo-500 transition relative overflow-hidden" title="Subir Logo de la Empresa">
         <img id="projectLogoImg" class="absolute inset-0 w-full h-full object-contain hidden bg-white">
         <i data-lucide="image-plus" id="projectLogoIcon" class="w-4 h-4 text-slate-500 group-hover:text-indigo-400"></i>
@@ -85,7 +85,6 @@
       </div>
     </div>
 
-    <!-- Centro: Herramientas de Dibujo -->
     <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 p-1 rounded-xl shadow-inner">
       <button id="toolSelect" onclick="setMode('select')" title="Seleccionar (V)" class="p-1.5 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 bg-indigo-600 text-white transition">
         <i data-lucide="mouse-pointer-2" class="w-4 h-4"></i> Mover
@@ -99,9 +98,9 @@
 
       <div class="h-4 w-px bg-slate-800 mx-1"></div>
 
-      <!-- Selector de Medios Ampliado -->
+      <!-- Selector de Cables Ampliado -->
       <select id="cableTypeSelect" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs focus:ring-1 focus:ring-indigo-500 outline-none text-slate-200 w-48">
-        <optgroup label="Canalizaciones Tubería EMT/PVC">
+        <optgroup label="Canalizaciones (EMT / PVC)">
           <option value="conduit_emt_12">Tubería EMT 1/2"</option>
           <option value="conduit_emt_34">Tubería EMT 3/4"</option>
           <option value="conduit_emt_1">Tubería EMT 1"</option>
@@ -116,7 +115,7 @@
           <option value="tray_ladder_300">Escalerilla Portacables 300mm</option>
           <option value="microduct">Microducto Fibra (HDPE)</option>
         </optgroup>
-        <optgroup label="Cableado de Datos y Fibra">
+        <optgroup label="Cables (Datos y Fibra)">
           <option value="fiber_drop">Fibra Drop Acometida (1 Hilo)</option>
           <option value="fiber_trunk">Fibra Óptica Troncal (OM3/OS2)</option>
           <option value="fiber_fttr">Fibra Transparente FTTR</option>
@@ -144,7 +143,6 @@
       </button>
     </div>
 
-    <!-- Derecha: Acciones, BOM y Proyectos -->
     <div class="flex items-center gap-2">
       <button onclick="openManualModal()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 flex items-center gap-1.5 transition">
         <i data-lucide="book-open" class="w-4 h-4 text-indigo-400"></i> Guía
@@ -174,7 +172,6 @@
     </div>
   </header>
 
-  <!-- CONTENEDOR PRINCIPAL -->
   <div class="flex-1 flex overflow-hidden relative">
 
     <!-- LIBRERÍA IZQUIERDA -->
@@ -182,7 +179,7 @@
       <div class="p-3 border-b border-slate-800">
         <div class="relative">
           <i data-lucide="search" class="w-4 h-4 text-slate-500 absolute left-2.5 top-2.5"></i>
-          <input type="text" id="searchComp" onkeyup="filterLibrary()" placeholder="Buscar Sigenergy, Canadian, Genérico..." class="w-full bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 outline-none focus:border-indigo-500">
+          <input type="text" id="searchComp" onkeyup="filterLibrary()" placeholder="Buscar Sigenergy, ZTE, Canadian..." class="w-full bg-slate-900 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 outline-none focus:border-indigo-500">
         </div>
       </div>
       
@@ -195,11 +192,13 @@
     <main class="flex-1 relative overflow-hidden bg-slate-900 grid-bg" id="canvasContainer">
       <div id="canvasViewport" class="absolute inset-0 origin-top-left" style="transform: translate(40px,40px) scale(1);">
         
+        <!-- Floor Plan Image -->
         <div id="floorPlanWrapper" class="absolute left-0 top-0 pointer-events-none select-none z-0 hidden">
           <canvas id="pdfCanvas" class="hidden"></canvas>
           <img id="floorPlanImg" class="max-w-none opacity-40">
         </div>
 
+        <!-- Connection Lines -->
         <svg id="connectionsSvg" class="absolute inset-0 w-[8000px] h-[8000px] pointer-events-none z-0">
           <defs>
             <pattern id="trayPattern" width="16" height="16" patternUnits="userSpaceOnUse">
@@ -214,6 +213,7 @@
           <line id="calibrationLine" fill="none" stroke="#f59e0b" stroke-width="3" stroke-dasharray="6,4" class="hidden pointer-events-none"/>
         </svg>
 
+        <!-- Node Layer -->
         <div id="nodesLayer" class="absolute inset-0 w-[8000px] h-[8000px] z-10 pointer-events-auto"></div>
       </div>
 
@@ -233,7 +233,7 @@
         </div>
         
         <div id="modeStatusBox" class="bg-slate-950/80 backdrop-blur border border-slate-800 rounded-lg px-3 py-2 text-xs text-indigo-400 font-medium flex items-center gap-2 shadow-xl">
-          <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> <span>Modo: Mover y Seleccionar</span>
+          <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> <span id="modeStatusLabel">Modo: Mover y Seleccionar</span>
         </div>
       </div>
 
@@ -291,7 +291,7 @@
 
   <!-- ================= MODALES ================= -->
 
-  <!-- MODAL: MANUAL DE USUARIO -->
+  <!-- MODAL: MANUAL -->
   <div id="modalManual" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[85vh]">
       <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950 rounded-t-2xl">
@@ -302,17 +302,17 @@
         <div>
           <h4 class="font-bold text-indigo-400 flex items-center gap-2 mb-2"><i data-lucide="map" class="w-4 h-4"></i> 1. Planos y Escala</h4>
           <p class="mb-1"><strong>Cargar:</strong> Haz clic en el botón superior "Plano" para subir tu PDF o imagen.</p>
-          <p><strong>Calibrar:</strong> Haz clic en el botón de la Regla (1m=20px). Selecciona dos puntos en el plano y escribe su distancia real para que las tuberías y paneles escalen correctamente.</p>
+          <p><strong>Calibrar:</strong> Haz clic en la Regla (1m=20px). Selecciona dos puntos en el plano y escribe su distancia real para que las tuberías escalen correctamente.</p>
         </div>
         <div>
-          <h4 class="font-bold text-amber-400 flex items-center gap-2 mb-2"><i data-lucide="mouse-pointer-2" class="w-4 h-4"></i> 2. Equipos y Movimiento</h4>
-          <p class="mb-1"><strong>Añadir:</strong> En el menú izquierdo, haz clic en cualquier ícono (Ej. Canadian Solar, Genérico o Sigenergy).</p>
-          <p><strong>Dimensiones:</strong> Los paneles solares cambian de tamaño automáticamente según tu escala. Puedes rotarlos 90° desde el panel de Propiedades.</p>
+          <h4 class="font-bold text-amber-400 flex items-center gap-2 mb-2"><i data-lucide="mouse-pointer-2" class="w-4 h-4"></i> 2. Rotación y Dimensiones</h4>
+          <p class="mb-1"><strong>Añadir:</strong> En el menú izquierdo, haz clic en cualquier ícono (Ej. Canadian Solar, ZTE o Sigenergy).</p>
+          <p><strong>Rotar a 360°:</strong> Selecciona el panel solar o equipo, ve al Panel Derecho y usa el deslizador de Rotación para ubicarlo exactamente en el techo.</p>
         </div>
         <div>
           <h4 class="font-bold text-emerald-400 flex items-center gap-2 mb-2"><i data-lucide="route" class="w-4 h-4"></i> 3. Trazado Libre o Multipunto</h4>
-          <p class="mb-1"><strong>Conectar Equipos:</strong> Modo "Cablear". Clic en equipo A, clics libres para doblar esquinas, y clic en equipo B.</p>
-          <p><strong>Trazado Libre:</strong> Modo "Canalización". Haz clic en el espacio vacío para iniciar, dobla esquinas, y haz <strong>Clic Derecho</strong> para terminar y soltar la tubería.</p>
+          <p class="mb-1"><strong>Conectar:</strong> Modo "Cablear". Clic en equipo A, clics libres para doblar esquinas, y clic en equipo B.</p>
+          <p><strong>Trazado Libre:</strong> Modo "Canalización". Haz clic vacío para iniciar, dobla esquinas, y haz <strong>Clic Derecho</strong> para terminar y soltar la tubería.</p>
         </div>
       </div>
       <div class="p-4 border-t border-slate-800 bg-slate-950 flex justify-end gap-2 rounded-b-2xl">
@@ -401,6 +401,66 @@
     </div>
   </div>
 
+  <!-- MODAL: SOLAR & FINANCIERO -->
+  <div id="modalSolar" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950 rounded-t-2xl">
+        <h3 class="font-bold text-slate-100 flex items-center gap-2"><i data-lucide="sun" class="text-amber-400"></i> Asistente Solar & ROI Comercial</h3>
+        <button onclick="closeModal('modalSolar')" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
+      </div>
+      <div class="p-5 space-y-6 text-xs text-slate-300 max-h-[80vh] overflow-y-auto">
+        
+        <div class="space-y-3">
+          <h4 class="font-bold text-indigo-400 uppercase border-b border-slate-800 pb-1">1. Análisis de Consumo y Tarifas (Quetzales)</h4>
+          <div class="grid grid-cols-3 gap-3">
+            <div><label class="block text-slate-400 mb-1">Consumo Mensual (kWh)</label><input type="number" id="calcSolarConsumo" value="1500" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 focus:border-indigo-500 font-mono"></div>
+            <div><label class="block text-slate-400 mb-1">Tarifa Eléctrica (Q/kWh)</label><input type="number" step="0.01" id="calcSolarTarifa" value="1.50" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 focus:border-indigo-500 font-mono"></div>
+            <div><label class="block text-slate-400 mb-1">Costo Instalado (Q)</label><input type="number" id="calcSolarCostoInv" value="55000" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 focus:border-indigo-500 font-mono"></div>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <h4 class="font-bold text-amber-400 uppercase border-b border-slate-800 pb-1">2. Dimensionamiento Canadian Solar / Sigenergy</h4>
+          <div class="grid grid-cols-3 gap-3">
+            <div><label class="block text-slate-400 mb-1">Potencia Instalada (kWp)</label><input type="number" id="calcSolarKwp" readonly class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1.5 text-slate-400 font-mono"></div>
+            <div><label class="block text-slate-400 mb-1">Horas Sol Pico (HSP)</label><input type="number" id="calcSolarHsp" value="5.0" step="0.1" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 focus:border-indigo-500 font-mono"></div>
+            <div><label class="block text-slate-400 mb-1">Perf. Ratio (PR %)</label><input type="number" id="calcSolarPr" value="80" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 focus:border-indigo-500 font-mono"></div>
+          </div>
+          <div class="grid grid-cols-4 gap-3 pt-2">
+            <div class="col-span-1"><label class="block text-slate-400 mb-1">Módulos x String</label><input type="number" id="calcSolarN" value="12" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 font-mono"></div>
+            <div class="col-span-1"><label class="block text-slate-400 mb-1">T. Mínima (°C)</label><input type="number" id="calcSolarTmin" value="0" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 font-mono"></div>
+            <div class="col-span-1"><label class="block text-slate-400 mb-1">Voc Panel (V)</label><input type="number" id="calcSolarVoc" value="52.4" step="0.1" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 font-mono"></div>
+            <div class="col-span-1"><label class="block text-slate-400 mb-1">Isc Panel (A)</label><input type="number" id="calcSolarIsc" value="14.5" step="0.1" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 font-mono"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="p-3 bg-slate-950 border border-slate-800 rounded-lg">
+            <div class="text-[10px] text-amber-400 uppercase font-bold mb-1">Resultados Técnicos (NEC 690)</div>
+            <div class="flex justify-between items-center"><span class="text-slate-400">Voc Máx Corregido:</span> <span id="resVoc" class="font-mono font-bold text-white">0 V</span></div>
+            <div class="flex justify-between items-center"><span class="text-slate-400">Ampacidad (1.56x):</span> <span id="resAmp" class="font-mono font-bold text-white">0 A</span></div>
+            <div class="flex justify-between items-center"><span class="text-slate-400">Generación Mensual:</span> <span id="resGenMensual" class="font-mono font-bold text-sky-400">0 kWh</span></div>
+          </div>
+          <div class="p-3 bg-emerald-950/20 border border-emerald-900/40 rounded-lg">
+            <div class="text-[10px] text-emerald-400 uppercase font-bold mb-1">Retorno de Inversión (ROI)</div>
+            <div class="flex justify-between items-center"><span class="text-slate-400">Cobertura Factura:</span> <span id="resCobertura" class="font-mono font-bold text-emerald-300">0 %</span></div>
+            <div class="flex justify-between items-center"><span class="text-slate-400">Ahorro Mensual:</span> <span id="resAhorroMensual" class="font-mono font-bold text-emerald-400">Q 0</span></div>
+            <div class="flex justify-between items-center"><span class="text-slate-400">ROI Proyectado:</span> <span id="resROI" class="font-mono font-bold text-white">0 Años</span></div>
+          </div>
+        </div>
+
+      </div>
+      <!-- Botón Exportar Directo ROI -->
+      <div class="p-4 border-t border-slate-800 bg-slate-950 flex justify-between items-center rounded-b-2xl">
+        <span class="text-xs text-slate-400">Cálculos proyectados en Quetzales.</span>
+        <div class="flex gap-2">
+          <button onclick="exportBomPDF()" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-bold flex items-center gap-2 shadow-lg shadow-red-600/20"><i data-lucide="file-text" class="w-4 h-4"></i> Imprimir PDF (ROI)</button>
+          <button onclick="closeModal('modalSolar')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium transition">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: PROYECTOS -->
   <div id="modalProjects" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl shadow-2xl flex flex-col">
@@ -422,64 +482,12 @@
     </div>
   </div>
 
-  <!-- MODAL: SOLAR & FINANCIERO -->
-  <div id="modalSolar" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col">
-      <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950 rounded-t-2xl">
-        <h3 class="font-bold text-slate-100 flex items-center gap-2"><i data-lucide="sun" class="text-amber-400"></i> Asistente Solar & ROI Comercial</h3>
-        <button onclick="closeModal('modalSolar')" class="text-slate-400 hover:text-white"><i data-lucide="x"></i></button>
-      </div>
-      <div class="p-5 space-y-6 text-xs text-slate-300 max-h-[80vh] overflow-y-auto">
-        
-        <div class="space-y-3">
-          <h4 class="font-bold text-indigo-400 uppercase border-b border-slate-800 pb-1">1. Análisis de Consumo y Tarifas (Quetzales)</h4>
-          <div class="grid grid-cols-3 gap-3">
-            <div><label class="block text-slate-400 mb-1">Consumo Mensual (kWh)</label><input type="number" id="calcSolarConsumo" value="1500" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 focus:border-indigo-500"></div>
-            <div><label class="block text-slate-400 mb-1">Tarifa Eléctrica (Q/kWh)</label><input type="number" step="0.01" id="calcSolarTarifa" value="1.50" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 focus:border-indigo-500"></div>
-            <div><label class="block text-slate-400 mb-1">Costo Sistema Instalado (Q)</label><input type="number" id="calcSolarCostoInv" value="55000" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 focus:border-indigo-500"></div>
-          </div>
-        </div>
-
-        <div class="space-y-3">
-          <h4 class="font-bold text-amber-400 uppercase border-b border-slate-800 pb-1">2. Dimensionamiento Canadian Solar / Sigenergy</h4>
-          <div class="grid grid-cols-3 gap-3">
-            <div><label class="block text-slate-400 mb-1">Potencia Instalada (kWp)</label><input type="number" id="calcSolarKwp" readonly class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1.5 text-slate-400 font-mono"></div>
-            <div><label class="block text-slate-400 mb-1">Horas Sol Pico (HSP)</label><input type="number" id="calcSolarHsp" value="5.0" step="0.1" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 focus:border-indigo-500"></div>
-            <div><label class="block text-slate-400 mb-1">Perf. Ratio (PR %)</label><input type="number" id="calcSolarPr" value="80" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5 focus:border-indigo-500"></div>
-          </div>
-          <div class="grid grid-cols-4 gap-3 pt-2">
-            <div class="col-span-1"><label class="block text-slate-400 mb-1">Módulos x String</label><input type="number" id="calcSolarN" value="12" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5"></div>
-            <div class="col-span-1"><label class="block text-slate-400 mb-1">T. Mínima (°C)</label><input type="number" id="calcSolarTmin" value="0" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5"></div>
-            <div class="col-span-1"><label class="block text-slate-400 mb-1">Voc Panel (V)</label><input type="number" id="calcSolarVoc" value="52.4" step="0.1" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5"></div>
-            <div class="col-span-1"><label class="block text-slate-400 mb-1">Isc Panel (A)</label><input type="number" id="calcSolarIsc" value="14.5" step="0.1" oninput="runSolarCalc()" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1.5"></div>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <div class="p-3 bg-slate-950 border border-slate-800 rounded-lg">
-            <div class="text-[10px] text-amber-400 uppercase font-bold mb-1">Resultados Técnicos (NEC 690)</div>
-            <div class="flex justify-between items-center"><span class="text-slate-400">Voc Máx Corregido:</span> <span id="resVoc" class="font-mono font-bold text-white">0 V</span></div>
-            <div class="flex justify-between items-center"><span class="text-slate-400">Ampacidad (1.56x):</span> <span id="resAmp" class="font-mono font-bold text-white">0 A</span></div>
-            <div class="flex justify-between items-center"><span class="text-slate-400">Generación Mensual:</span> <span id="resGenMensual" class="font-mono font-bold text-sky-400">0 kWh</span></div>
-          </div>
-          <div class="p-3 bg-emerald-950/20 border border-emerald-900/40 rounded-lg">
-            <div class="text-[10px] text-emerald-400 uppercase font-bold mb-1">Retorno de Inversión (ROI)</div>
-            <div class="flex justify-between items-center"><span class="text-slate-400">Cobertura Factura:</span> <span id="resCobertura" class="font-mono font-bold text-emerald-300">0 %</span></div>
-            <div class="flex justify-between items-center"><span class="text-slate-400">Ahorro Mensual:</span> <span id="resAhorroMensual" class="font-mono font-bold text-emerald-400">Q 0</span></div>
-            <div class="flex justify-between items-center"><span class="text-slate-400">ROI Proyectado:</span> <span id="resROI" class="font-mono font-bold text-white">0 Años</span></div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
   <!-- MODAL: CALIBRACIÓN -->
   <div id="modalCalibrate" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-xl p-4 shadow-2xl">
       <h3 class="font-bold text-amber-400 text-sm mb-2 flex items-center gap-2"><i data-lucide="ruler"></i> Fijar Escala del Plano</h3>
       <p class="text-xs text-slate-400 mb-4">Distancia medida: <span id="calibPxSpan" class="text-white font-mono bg-slate-800 px-1 rounded">0</span> px.<br>Equivale a metros:</p>
-      <input type="number" id="calibMetersInput" value="5.0" step="0.1" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white mb-4 outline-none">
+      <input type="number" id="calibMetersInput" value="5.0" step="0.1" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white mb-4 outline-none font-mono">
       <div class="flex justify-end gap-2">
         <button onclick="cancelCalibration()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded text-xs text-slate-300">Cancelar</button>
         <button onclick="applyCalibration()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 rounded text-xs text-white font-bold">Aplicar</button>
@@ -511,46 +519,54 @@
     let HISTORY_INDEX = -1;
     let isRestoringHistory = false;
 
-    // LIBRERÍA EXTENDIDA (CANADIAN, SIGENERGY, ZTE, IoT, GENÉRICO)
+    // LIBRERÍA EXTENDIDA PROFESIONAL
     const LIB_DEFS = {
-      // Dispositivo Genérico Personalizable
-      generic_device: { cat: 'Personalizado', label: 'Equipo Genérico', icon: 'box', color: '#94a3b8', props: { brand: 'Genérico', model: 'G-01', ports: 'Libre', poeWatts: 0, voltage: 'N/A' } },
+      // Dispositivo Genérico Editable (Comodín)
+      generic_device: { cat: 'Personalizado', label: 'Equipo Genérico', icon: 'box', color: '#94a3b8', props: { brand: 'Genérico', model: 'Mod-01', ports: 'Libre', poeWatts: 0, voltage: 'N/A', rotation: 0 } },
 
-      // Solar & BESS (CANADIAN SOLAR & SIGENERGY con dimensiones físicas reales)
-      pv_panel: { cat: 'Solar', label: 'Canadian Solar HiKu7', icon: 'sun', color: '#f59e0b', props: { brand: 'Canadian Solar', model: 'CS7L-600W', ports: 'MC4', pvWp: 600, poeWatts: 0, voltage: '52.4V Voc', widthM: 1.13, heightM: 2.27, isRotated: false } },
-      pv_string: { cat: 'Solar', label: 'String Solar (10 Mods)', icon: 'grip', color: '#f59e0b', props: { brand: 'Canadian Solar', model: 'Array 6kWp', ports: 'MC4', pvWp: 6000, poeWatts: 0, voltage: '524V Voc' } },
-      pv_inv_hybrid: { cat: 'Solar', label: 'Sigenergy SigenStor Inv.', icon: 'zap', color: '#ea580c', props: { brand: 'Sigenergy', model: 'Sigen Energy Gateway 10kW', ports: 'DC/AC/SigenLink', pvWp: 0, poeWatts: 0, voltage: '240V AC' } },
-      bess_rack: { cat: 'BESS', label: 'Sigenergy SigenBat 8kWh', icon: 'battery-medium', color: '#22c55e', props: { brand: 'Sigenergy', model: 'BAT-8.0', ports: 'SigenLink', bessKwh: 8.0, poeWatts: 0, voltage: '400V DC' } },
+      // Solar & BESS (CANADIAN SOLAR & SIGENERGY con dimensiones físicas reales para rotación libre)
+      pv_panel: { cat: 'Solar', label: 'Canadian Solar HiKu7', icon: 'sun', color: '#f59e0b', props: { brand: 'Canadian Solar', model: 'CS7L-600W', ports: 'MC4', pvWp: 600, poeWatts: 0, voltage: '52.4V Voc', widthM: 1.13, heightM: 2.27, rotation: 0 } },
+      pv_string: { cat: 'Solar', label: 'String Solar (10 Mods)', icon: 'grip', color: '#f59e0b', props: { brand: 'Canadian Solar', model: 'Array 6kWp', ports: 'MC4', pvWp: 6000, poeWatts: 0, voltage: '524V Voc', rotation: 0 } },
+      pv_inv_hybrid: { cat: 'Solar', label: 'Sigenergy SigenStor Inv.', icon: 'zap', color: '#ea580c', props: { brand: 'Sigenergy', model: 'Sigen Energy Gateway 10kW', ports: 'DC/AC/SigenLink', pvWp: 0, poeWatts: 0, voltage: '240V AC', rotation: 0 } },
+      bess_rack: { cat: 'BESS', label: 'Sigenergy SigenBat 8kWh', icon: 'battery-medium', color: '#22c55e', props: { brand: 'Sigenergy', model: 'BAT-8.0', ports: 'SigenLink', bessKwh: 8.0, poeWatts: 0, voltage: '400V DC', rotation: 0 } },
 
-      // GPON & FTTR (ZTE)
-      gpon_olt_zte: { cat: 'GPON/FTTH', label: 'OLT ZTE C620', icon: 'server', color: '#10b981', props: { brand: 'ZTE', model: 'ZXA10 C620', ports: 'PON, Uplink 10G', poeWatts: 0, voltage: '-48V DC' } },
-      gpon_ont_zte: { cat: 'GPON/FTTH', label: 'ONT ZTE F660 V8', icon: 'router', color: '#10b981', props: { brand: 'ZTE', model: 'F660 V8', ports: '1xPON, 4xGE, Wi-Fi', poeWatts: 0, voltage: '12V DC' } },
-      gpon_splitter_8: { cat: 'GPON/FTTH', label: 'Splitter PLC 1:8', icon: 'git-merge', color: '#059669', props: { brand: 'ZTE/Genérico', model: '1x8 SC/APC', ports: '1 In, 8 Out', poeWatts: 0, voltage: 'Pasivo' } },
-      gpon_splitter_16: { cat: 'GPON/FTTH', label: 'Splitter PLC 1:16', icon: 'git-merge', color: '#059669', props: { brand: 'ZTE/Genérico', model: '1x16 SC/APC', ports: '1 In, 16 Out', poeWatts: 0, voltage: 'Pasivo' } },
-      fat_box: { cat: 'GPON/FTTH', label: 'Caja NAP / FAT 16P', icon: 'package', color: '#34d399', props: { brand: '', model: '', ports: '16x SC/APC', poeWatts: 0, voltage: 'Pasivo' } },
-      fttr_master: { cat: 'FTTR', label: 'Router Master FTTR', icon: 'wifi-high', color: '#14b8a6', props: { brand: 'ZTE', model: 'G450', ports: 'Uplink PON, Down Óptico', poeWatts: 0, voltage: '12V DC' } },
-      fttr_slave: { cat: 'FTTR', label: 'Esclavo FTTR Wi-Fi 6', icon: 'wifi', color: '#14b8a6', props: { brand: 'ZTE', model: 'G160', ports: 'Entrada Fibra Invisible', poeWatts: 0, voltage: 'PoF / DC' } },
+      // GPON & FTTR (ZTE & Huawei)
+      gpon_olt_zte: { cat: 'GPON/FTTH', label: 'OLT ZTE C620', icon: 'server', color: '#10b981', props: { brand: 'ZTE', model: 'ZXA10 C620', ports: 'PON, Uplink 10G', poeWatts: 0, voltage: '-48V DC', rotation: 0 } },
+      gpon_mdu: { cat: 'GPON/FTTH', label: 'MDU ZTE F821', icon: 'building', color: '#059669', props: { brand: 'ZTE', model: 'F821', ports: '24x FE/GE, PON', poeWatts: 0, voltage: '220V AC', rotation: 0 } },
+      gpon_ont_zte: { cat: 'GPON/FTTH', label: 'ONT ZTE F660 V8', icon: 'router', color: '#10b981', props: { brand: 'ZTE', model: 'F660 V8', ports: '1xPON, 4xGE, Wi-Fi', poeWatts: 0, voltage: '12V DC', rotation: 0 } },
+      gpon_splitter_8: { cat: 'GPON/FTTH', label: 'Splitter PLC 1:8', icon: 'git-merge', color: '#059669', props: { brand: 'Genérico', model: '1x8 SC/APC', ports: '1 In, 8 Out', poeWatts: 0, voltage: 'Pasivo', rotation: 0 } },
+      gpon_splitter_16: { cat: 'GPON/FTTH', label: 'Splitter PLC 1:16', icon: 'git-merge', color: '#059669', props: { brand: 'Genérico', model: '1x16 SC/APC', ports: '1 In, 16 Out', poeWatts: 0, voltage: 'Pasivo', rotation: 0 } },
+      fat_box: { cat: 'GPON/FTTH', label: 'Caja NAP / FAT 16P', icon: 'package', color: '#34d399', props: { brand: 'Genérico', model: 'FAT-16', ports: '16x SC/APC', poeWatts: 0, voltage: 'Pasivo', rotation: 0 } },
+      gpon_odf: { cat: 'GPON/FTTH', label: 'ODF Rackeable 24P', icon: 'layers', color: '#10b981', props: { brand: 'Genérico', model: 'ODF-24', ports: '24x LC/APC', poeWatts: 0, voltage: 'Pasivo', rotation: 0 } },
+      fttr_master: { cat: 'FTTR', label: 'Router Master FTTR', icon: 'wifi-high', color: '#14b8a6', props: { brand: 'ZTE', model: 'G450', ports: 'Uplink PON, Down Óptico', poeWatts: 0, voltage: '12V DC', rotation: 0 } },
+      fttr_slave: { cat: 'FTTR', label: 'Esclavo FTTR Wi-Fi 6', icon: 'wifi', color: '#14b8a6', props: { brand: 'ZTE', model: 'G160', ports: 'Entrada Fibra', poeWatts: 0, voltage: 'PoF / DC', rotation: 0 } },
 
-      // CCTV & Redes
-      cam_dome: { cat: 'CCTV', label: 'Cámara Domo IP 4K', icon: 'video', color: '#0ea5e9', props: { brand: 'Hikvision', model: '', ports: '1x RJ45', poeWatts: 7, voltage: '48V PoE' } },
-      cam_bullet: { cat: 'CCTV', label: 'Cámara Bullet LPR', icon: 'camera', color: '#0ea5e9', props: { brand: 'Dahua', model: '', ports: '1x RJ45', poeWatts: 9, voltage: '48V PoE' } },
-      cam_ptz: { cat: 'CCTV', label: 'Cámara PTZ 360°', icon: 'cctv', color: '#0284c7', props: { brand: '', model: '', ports: '1x RJ45', poeWatts: 25, voltage: 'Hi-PoE' } },
-      nvr_server: { cat: 'CCTV', label: 'NVR / VMS 32 Ch', icon: 'hard-drive', color: '#0369a1', props: { brand: '', model: '', ports: '2x LAN', poeWatts: 0, voltage: '120V AC' } },
-      acs_panel: { cat: 'Acceso', label: 'Control Acceso 4P', icon: 'lock-keyhole', color: '#0d9488', props: { brand: '', model: '', ports: 'Wiegand/OSDP', poeWatts: 15, voltage: '12V DC' } },
-      switch_poe: { cat: 'Redes', label: 'Switch Core 24P PoE+', icon: 'network', color: '#4f46e5', props: { brand: 'Cisco', model: '', ports: '24x RJ45, 4x SFP', poeWatts: 0, voltage: '120/240V' } },
-      router_fw: { cat: 'Redes', label: 'Router Firewall', icon: 'shield-check', color: '#4338ca', props: { brand: 'Fortinet', model: '', ports: 'WAN/LAN', poeWatts: 0, voltage: '120V AC' } },
-      ap_wifi: { cat: 'Redes', label: 'Access Point Wi-Fi 6', icon: 'router', color: '#6366f1', props: { brand: 'Ubiquiti', model: 'U6-Pro', ports: '1x RJ45', poeWatts: 14, voltage: 'PoE+' } },
-      rack_it: { cat: 'Redes', label: 'Gabinete Rack 42U', icon: 'server-cog', color: '#475569', props: { brand: '', model: '', ports: 'PDU', poeWatts: 0, voltage: '120V AC' } },
+      // CCTV & Redes (Extendidos)
+      cam_dome: { cat: 'CCTV', label: 'Cámara Domo IP', icon: 'video', color: '#0ea5e9', props: { brand: 'Hikvision', model: '', ports: '1x RJ45', poeWatts: 7, voltage: '48V PoE', rotation: 0 } },
+      cam_bullet: { cat: 'CCTV', label: 'Cámara Bullet 4K', icon: 'camera', color: '#0ea5e9', props: { brand: 'Dahua', model: '', ports: '1x RJ45', poeWatts: 9, voltage: '48V PoE', rotation: 0 } },
+      cam_ptz: { cat: 'CCTV', label: 'Cámara PTZ 360°', icon: 'cctv', color: '#0284c7', props: { brand: '', model: '', ports: '1x RJ45', poeWatts: 25, voltage: 'Hi-PoE', rotation: 0 } },
+      cam_lpr: { cat: 'CCTV', label: 'Cámara LPR (Placas)', icon: 'car', color: '#0284c7', props: { brand: 'Dahua', model: '', ports: '1x RJ45', poeWatts: 15, voltage: '48V PoE', rotation: 0 } },
+      cam_fisheye: { cat: 'CCTV', label: 'Cámara Fisheye 360', icon: 'eye', color: '#0ea5e9', props: { brand: 'Hikvision', model: '', ports: '1x RJ45', poeWatts: 12, voltage: '48V PoE', rotation: 0 } },
+      nvr_server: { cat: 'CCTV', label: 'NVR / VMS 32 Ch', icon: 'hard-drive', color: '#0369a1', props: { brand: 'Hikvision', model: 'DS-7732', ports: '2x LAN', poeWatts: 0, voltage: '120V AC', rotation: 0 } },
+      nvr_server_large: { cat: 'CCTV', label: 'NVR Industrial 64 Ch', icon: 'server', color: '#0c4a6e', props: { brand: 'Hikvision', model: 'DS-9664', ports: '2x LAN GbE', poeWatts: 0, voltage: '120V AC', rotation: 0 } },
+      cctv_dvr: { cat: 'CCTV', label: 'DVR Analógico 16Ch', icon: 'film', color: '#0891b2', props: { brand: 'Dahua', model: 'XVR', ports: '16x BNC', poeWatts: 0, voltage: '12V DC', rotation: 0 } },
+      acs_panel: { cat: 'Acceso', label: 'Control Acceso 4P', icon: 'lock-keyhole', color: '#0d9488', props: { brand: 'ZKTeco', model: 'InBio 460', ports: 'Wiegand/OSDP', poeWatts: 15, voltage: '12V DC', rotation: 0 } },
+      switch_poe: { cat: 'Redes', label: 'Switch Core 24P PoE+', icon: 'network', color: '#4f46e5', props: { brand: 'Cisco / UniFi', model: '', ports: '24x RJ45, 4x SFP', poeWatts: 0, voltage: '120/240V', rotation: 0 } },
+      router_fw: { cat: 'Redes', label: 'Router Firewall', icon: 'shield-check', color: '#4338ca', props: { brand: 'Fortinet', model: '', ports: 'WAN/LAN', poeWatts: 0, voltage: '120V AC', rotation: 0 } },
+      ap_wifi: { cat: 'Redes', label: 'Access Point Wi-Fi 6', icon: 'radio', color: '#6366f1', props: { brand: 'Ubiquiti', model: 'U6-Pro', ports: '1x RJ45', poeWatts: 14, voltage: 'PoE+', rotation: 0 } },
 
       // IoT
-      iot_gateway: { cat: 'IoT', label: 'Gateway LoRaWAN', icon: 'radio', color: '#8b5cf6', props: { brand: 'Milesight', model: 'UG65', ports: 'RJ45, Antena', poeWatts: 12, voltage: '48V PoE' } },
-      iot_sensor_th: { cat: 'IoT', label: 'Sensor Temp/Hum', icon: 'thermometer', color: '#a855f7', props: { brand: '', model: '', ports: 'LoRa', poeWatts: 0, voltage: 'Bat 3.6V' } },
-      iot_valve: { cat: 'IoT', label: 'Válvula Inteligente', icon: 'pipette', color: '#c084fc', props: { brand: '', model: '', ports: 'Control', poeWatts: 0, voltage: '12V DC' } },
-      iot_relay: { cat: 'IoT', label: 'Relé Modbus 8CH', icon: 'cpu', color: '#7c3aed', props: { brand: '', model: '', ports: 'RS485', poeWatts: 0, voltage: '24V DC' } },
+      iot_gateway: { cat: 'IoT', label: 'Gateway LoRaWAN', icon: 'satellite-dish', color: '#8b5cf6', props: { brand: 'Milesight', model: 'UG65', ports: 'RJ45, Antena', poeWatts: 12, voltage: '48V PoE', rotation: 0 } },
+      iot_sensor_th: { cat: 'IoT', label: 'Sensor Temp/Hum', icon: 'thermometer', color: '#a855f7', props: { brand: '', model: '', ports: 'LoRa', poeWatts: 0, voltage: 'Bat 3.6V', rotation: 0 } },
+      iot_valve: { cat: 'IoT', label: 'Válvula Inteligente', icon: 'pipette', color: '#c084fc', props: { brand: '', model: '', ports: 'Control', poeWatts: 0, voltage: '12V DC', rotation: 0 } },
+      iot_relay: { cat: 'IoT', label: 'Relé Modbus 8CH', icon: 'cpu', color: '#7c3aed', props: { brand: '', model: '', ports: 'RS485', poeWatts: 0, voltage: '24V DC', rotation: 0 } },
 
-      // Canalizaciones
-      box_4x4: { cat: 'Canalización', label: 'Caja 4x4 EMT', icon: 'archive', color: '#06b6d4', props: { brand: '', model: 'Acero Galv.', ports: 'KO 3/4"', poeWatts: 0, voltage: 'N/A' } },
-      box_nema: { cat: 'Canalización', label: 'Registro NEMA', icon: 'archive', color: '#0891b2', props: { brand: '', model: '', ports: '', poeWatts: 0, voltage: 'N/A' } }
+      // Canalizaciones & Accesorios (Extendidos)
+      box_4x4: { cat: 'Canalización', label: 'Caja 4x4 EMT', icon: 'box-select', color: '#06b6d4', props: { brand: '', model: 'Acero Galv.', ports: 'KO 3/4"', poeWatts: 0, voltage: 'N/A', rotation: 0 } },
+      box_nema: { cat: 'Canalización', label: 'Registro NEMA 12x12', icon: 'archive', color: '#0891b2', props: { brand: '', model: '', ports: '', poeWatts: 0, voltage: 'N/A', rotation: 0 } },
+      box_nema_large: { cat: 'Canalización', label: 'Gabinete NEMA 3R', icon: 'server', color: '#0e7490', props: { brand: 'Hoffman', model: '24x24x8', ports: 'Varios KO', poeWatts: 0, voltage: 'N/A', rotation: 0 } },
+      curve_emt: { cat: 'Canalización', label: 'Curva EMT 90°', icon: 'corner-down-right', color: '#06b6d4', props: { brand: '', model: '', ports: '', poeWatts: 0, voltage: 'N/A', rotation: 0 } },
+      condulet_lb: { cat: 'Canalización', label: 'Condulet LB', icon: 'git-commit', color: '#0891b2', props: { brand: 'Crouse-Hinds', model: 'LB 3/4"', ports: '2x KO', poeWatts: 0, voltage: 'N/A', rotation: 0 } }
     };
 
     const LINE_STYLES = {
@@ -620,37 +636,32 @@
       }
       
       pushHistory(); 
-
-      // Atajos Teclado
-      window.addEventListener('keydown', e => {
-        if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA') return;
-        if(e.key==='Delete'||e.key==='Backspace') deleteSelected();
-        if(e.key==='Escape') {
-          if (STATE.isRouting) cancelRouting();
-          else setMode('select');
-        }
-        if(e.key==='v'||e.key==='V') setMode('select');
-        if(e.key==='c'||e.key==='C') setMode('connect');
-        if(e.key==='p'||e.key==='P') setMode('pathway');
-        
-        // Historial atajos
-        if(e.ctrlKey && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); undo(); }
-        if(e.ctrlKey && (e.key === 'y' || e.key === 'Y')) { e.preventDefault(); redo(); }
-      });
     };
+
+    // Keyboard Shortcuts
+    window.addEventListener('keydown', e => {
+      if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA') return;
+      if(e.key==='Delete'||e.key==='Backspace') deleteSelected();
+      if(e.key==='Escape') {
+        if (STATE.isRouting) cancelRouting();
+        else setMode('select');
+      }
+      if(e.key==='v'||e.key==='V') setMode('select');
+      if(e.key==='c'||e.key==='C') setMode('connect');
+      if(e.key==='p'||e.key==='P') setMode('pathway');
+      
+      if(e.ctrlKey && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); undo(); }
+      if(e.ctrlKey && (e.key === 'y' || e.key === 'Y')) { e.preventDefault(); redo(); }
+    });
 
     function pushHistory() {
       if (isRestoringHistory) return;
-      if (HISTORY_INDEX < HISTORY.length - 1) {
-          HISTORY.splice(HISTORY_INDEX + 1);
-      }
+      if (HISTORY_INDEX < HISTORY.length - 1) HISTORY.splice(HISTORY_INDEX + 1);
       const snapshot = JSON.stringify({ nodes: STATE.nodes, connections: STATE.connections, pathways: STATE.pathways });
       if (HISTORY_INDEX >= 0 && HISTORY[HISTORY_INDEX] === snapshot) return;
-
       HISTORY.push(snapshot);
       if (HISTORY.length > 30) HISTORY.shift();
       else HISTORY_INDEX++;
-      
       saveState();
     }
 
@@ -677,8 +688,7 @@
           STATE.nodes = data.nodes || [];
           STATE.connections = data.connections || [];
           STATE.pathways = data.pathways || [];
-          deselectAll();
-          updateAll();
+          deselectAll(); updateAll();
       } catch(e) {}
       isRestoringHistory = false;
       saveState();
@@ -696,10 +706,7 @@
       if(dot && txt) {
          dot.classList.replace('bg-emerald-500', 'bg-sky-500');
          txt.innerText = "Guardando...";
-         setTimeout(() => {
-             dot.classList.replace('bg-sky-500', 'bg-emerald-500');
-             txt.innerText = "Autoguardado";
-         }, 1000);
+         setTimeout(() => { dot.classList.replace('bg-sky-500', 'bg-emerald-500'); txt.innerText = "Autoguardado"; }, 1000);
       }
     }
 
@@ -735,9 +742,7 @@
       });
     }
 
-    function toggleSidebar(id) {
-      document.getElementById(id).classList.toggle('sidebar-collapsed');
-    }
+    function toggleSidebar(id) { document.getElementById(id).classList.toggle('sidebar-collapsed'); }
 
     function handleLogoUpload(e) {
       const file = e.target.files[0];
@@ -772,16 +777,15 @@
       const act = document.getElementById('tool' + (mode.charAt(0).toUpperCase() + mode.slice(1)));
       if(act) { act.classList.add('bg-indigo-600','text-white'); act.classList.remove('text-slate-300'); }
       
-      const st = document.getElementById('modeStatusBox');
-      if(mode==='select') st.innerHTML = '<span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> <span>Modo: Mover y Seleccionar</span>';
-      if(mode==='connect') st.innerHTML = '<span class="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span> <span>Modo: Cablear (Clic org, clics vacíos, clic dest)</span>';
-      if(mode==='pathway') st.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> <span>Modo: Canalización (Doble clic/Clic derecho para terminar)</span>';
-      
+      const st = document.getElementById('modeStatusLabel');
+      if(mode==='select') st.innerText = 'Modo: Mover y Seleccionar';
+      if(mode==='connect') st.innerText = 'Modo: Cablear (Clic org, clics vacíos, clic dest)';
+      if(mode==='pathway') st.innerText = 'Modo: Canalización (Doble clic/Clic derecho para terminar)';
       cancelRouting();
     }
 
     function createAnchorNode(x, y) {
-      const anchor = { id: 'anchor_' + Date.now(), type: 'anchor', name: 'Punto de Ruta', x: x, y: y, props: {}, customProps: {} };
+      const anchor = { id: 'anchor_' + Date.now(), type: 'anchor', name: 'Punto Libre', x: x, y: y, props: {}, customProps: {} };
       STATE.nodes.push(anchor);
       return anchor;
     }
@@ -795,11 +799,13 @@
         y: (canvasContainer.clientHeight / 2 - STATE.panY) / STATE.zoom,
         props: JSON.parse(JSON.stringify(def.props)), customProps: {}
       };
-      // For physical sizing (like panels)
+      
+      // Free Rotation
+      node.props.rotation = def.props.rotation || 0;
+
       if (def.props.widthM !== undefined) {
          node.props.widthM = def.props.widthM;
          node.props.heightM = def.props.heightM;
-         node.props.isRotated = def.props.isRotated || false;
       }
       STATE.nodes.push(node);
       selectNode(node);
@@ -816,8 +822,9 @@
         if(n.type === 'anchor') {
            if (STATE.mode === 'connect' || STATE.mode === 'pathway') {
               const dot = document.createElement('div');
-              dot.className = `absolute transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-indigo-400 opacity-50`;
+              dot.className = `absolute w-2 h-2 rounded-full bg-indigo-400 opacity-50`;
               dot.style.left = `${n.x}px`; dot.style.top = `${n.y}px`;
+              dot.style.transform = "translate(-50%, -50%)";
               layer.appendChild(dot);
            }
            return;
@@ -828,17 +835,16 @@
         const isRouting = STATE.routeSourceId === n.id;
         
         const hasDim = n.props.widthM !== undefined && n.props.heightM !== undefined;
-        let wPx = 32; let hPx = 32; // Default 32px
+        let wPx = 32; let hPx = 32; 
         if(hasDim) {
-            const wM = n.props.isRotated ? n.props.heightM : n.props.widthM;
-            const hM = n.props.isRotated ? n.props.widthM : n.props.heightM;
-            wPx = Math.max(16, wM / STATE.scaleMetersPerPx);
-            hPx = Math.max(16, hM / STATE.scaleMetersPerPx);
+            wPx = Math.max(16, n.props.widthM / STATE.scaleMetersPerPx);
+            hPx = Math.max(16, n.props.heightM / STATE.scaleMetersPerPx);
         }
         
+        const rot = n.props.rotation || 0;
         const card = document.createElement('div');
         card.id = `html_${n.id}`;
-        card.className = `absolute transform -translate-x-1/2 -translate-y-1/2 rounded-lg flex items-center justify-center border-2 cursor-pointer shadow-lg group ${isSel ? 'border-indigo-400 bg-indigo-900/50 shadow-indigo-500/30 ring-4 ring-indigo-500/20' : (hasDim ? 'bg-slate-900/40 backdrop-blur-sm' : 'bg-slate-900/80')} ${isRouting ? 'ring-2 ring-sky-400 animate-pulse' : ''}`;
+        card.className = `absolute rounded-lg flex items-center justify-center border-2 cursor-pointer shadow-lg group ${isSel ? 'border-indigo-400 bg-indigo-900/50 shadow-indigo-500/30 ring-4 ring-indigo-500/20' : (hasDim ? 'bg-slate-900/40 backdrop-blur-sm' : 'bg-slate-900/80')} ${isRouting ? 'ring-2 ring-sky-400 animate-pulse' : ''}`;
         
         card.style.left = `${n.x}px`; 
         card.style.top = `${n.y}px`;
@@ -846,13 +852,16 @@
         card.style.height = `${hPx}px`;
         card.style.borderColor = isSel ? '#818cf8' : def.color;
         
-        // Show icon if it's big enough, or if it's standard size
+        // CSS transform handles exact placement and FREE 360 rotation!
+        card.style.transform = `translate(-50%, -50%) rotate(${rot}deg)`;
+        card.style.transformOrigin = "center center";
+
         if (wPx >= 20 && hPx >= 20) {
-           card.innerHTML = `<i data-lucide="${def.icon}" class="w-4 h-4 text-white pointer-events-none opacity-80"></i>`;
+           card.innerHTML = `<i data-lucide="${def.icon}" class="w-4 h-4 text-white pointer-events-none opacity-80" style="transform: rotate(-${rot}deg)"></i>`;
         }
 
         card.innerHTML += `
-          <div class="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 p-2 rounded-lg shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 flex flex-col items-center whitespace-nowrap min-w-[120px]">
+          <div class="absolute top-full mt-2 bg-slate-900 border border-slate-700 p-2 rounded-lg shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 flex flex-col items-center whitespace-nowrap min-w-[120px]" style="transform: rotate(-${rot}deg)">
             <span class="text-xs font-bold text-slate-100">${n.name}</span>
             <span class="text-[9px] text-slate-400 font-medium">${n.props.brand||''} ${n.props.model||''}</span>
             <div class="h-px w-full bg-slate-800 my-1"></div>
@@ -1046,9 +1055,7 @@
       if (STATE.dragNode || STATE.dragWp) {
           if(STATE.hasDragged) pushHistory();
       }
-      STATE.dragNode = null; 
-      STATE.dragWp = null; 
-      STATE.hasDragged = false;
+      STATE.dragNode = null; STATE.dragWp = null; STATE.hasDragged = false;
       saveState(); 
     });
     
@@ -1087,7 +1094,7 @@
       
       let propsHtml = '';
       for(let k in n.props) {
-        if(['brand','model','ports','widthM','heightM','isRotated'].includes(k)) continue; 
+        if(['brand','model','ports','widthM','heightM','rotation'].includes(k)) continue; 
         propsHtml += `
           <div><label class="block text-[10px] text-slate-400 mb-1 capitalize">${k}</label>
           <input type="${typeof n.props[k]==='number'?'number':'text'}" value="${n.props[k]}" onchange="n.props['${k}'] = this.type==='number'?parseFloat(this.value):this.value; updateAll(); pushHistory()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-xs text-slate-200 font-mono"></div>
@@ -1120,13 +1127,18 @@
 
           ${n.props.widthM !== undefined ? `
           <div class="grid grid-cols-2 gap-2 border-t border-slate-800 pt-3 mt-3">
-            <div class="col-span-2 text-[10px] font-bold text-slate-400 uppercase flex justify-between">Dimensiones Físicas <span>(Escalable)</span></div>
-            <div><label class="block text-[10px] text-slate-400 mb-1">Ancho (m)</label>
+            <div class="col-span-2 text-[10px] font-bold text-slate-400 uppercase flex justify-between">Dimensiones Físicas (m)</div>
+            <div><label class="block text-[10px] text-slate-400 mb-1">Ancho (X)</label>
             <input type="number" step="0.1" value="${n.props.widthM}" onchange="n.props.widthM=parseFloat(this.value); updateAll(); pushHistory()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-xs text-slate-200"></div>
-            <div><label class="block text-[10px] text-slate-400 mb-1">Largo (m)</label>
+            <div><label class="block text-[10px] text-slate-400 mb-1">Largo (Y)</label>
             <input type="number" step="0.1" value="${n.props.heightM}" onchange="n.props.heightM=parseFloat(this.value); updateAll(); pushHistory()" class="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-xs text-slate-200"></div>
-            <div class="col-span-2">
-              <button onclick="n.props.isRotated = !n.props.isRotated; updateAll(); pushHistory()" class="w-full px-2 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded text-[10px] flex items-center justify-center gap-2"><i data-lucide="rotate-cw" class="w-3 h-3"></i> Rotar 90° Grados</button>
+            
+            <div class="col-span-2 mt-1">
+              <label class="block text-[10px] text-slate-400 mb-1 flex justify-between">Rotación Libre (°)<span id="rot_lbl_${n.id}">${n.props.rotation || 0}°</span></label>
+              <input type="range" min="0" max="359" value="${n.props.rotation || 0}" 
+                oninput="document.getElementById('html_${n.id}').style.transform='translate(-50%, -50%) rotate('+this.value+'deg)'; document.getElementById('rot_lbl_${n.id}').innerText=this.value+'°'; n.props.rotation=parseInt(this.value);" 
+                onchange="updateAll(); pushHistory()" 
+                class="w-full accent-indigo-500">
             </div>
           </div>
           ` : ''}
@@ -1153,21 +1165,12 @@
         pushHistory();
       }
     }
-    function updateCustomProp(nodeId, key, val) {
-      const n = STATE.nodes.find(x => x.id === nodeId);
-      if(n && n.customProps) { n.customProps[key] = val; pushHistory(); }
-    }
-    function removeCustomProp(nodeId, key) {
-      const n = STATE.nodes.find(x => x.id === nodeId);
-      if(n && n.customProps) { delete n.customProps[key]; selectNode(n); pushHistory(); }
-    }
+    function updateCustomProp(nodeId, key, val) { const n = STATE.nodes.find(x => x.id === nodeId); if(n && n.customProps) { n.customProps[key] = val; pushHistory(); } }
+    function removeCustomProp(nodeId, key) { const n = STATE.nodes.find(x => x.id === nodeId); if(n && n.customProps) { delete n.customProps[key]; selectNode(n); pushHistory(); } }
 
     function selectRoute(route, isPathway) {
-      STATE.selPathId = isPathway ? route.id : null;
-      STATE.selConnId = !isPathway ? route.id : null;
-      STATE.selNodeId = null;
-      document.getElementById('btnDelete').classList.remove('hidden');
-      document.getElementById('btnDuplicate').classList.add('hidden');
+      STATE.selPathId = isPathway ? route.id : null; STATE.selConnId = !isPathway ? route.id : null; STATE.selNodeId = null;
+      document.getElementById('btnDelete').classList.remove('hidden'); document.getElementById('btnDuplicate').classList.add('hidden');
       renderCanvasNodes(); renderVectors();
       
       const style = LINE_STYLES[route.type];
@@ -1184,7 +1187,7 @@
           <div class="text-[10px] text-slate-400 uppercase pt-2">Longitud Exacta Centro</div>
           <div class="text-lg font-mono font-bold text-sky-400">${route.lengthMeters.toFixed(2)} m</div>
           <div class="pt-2 border-t border-slate-800 text-[10px] text-emerald-400">Norma Bom: ${(route.lengthMeters * (isPathway?1.05:1.1)).toFixed(2)} m (+merma)</div>
-          <div class="pt-2 text-[10px] text-slate-400 font-mono italic">Selecciona para ver vértices. Arrastra los puntos en el plano para curvar.</div>
+          <div class="pt-2 text-[10px] text-slate-400 font-mono italic">Selecciona para ver vértices. Arrastra los puntos en el plano para curvar libremente.</div>
         </div>
       `;
     }
@@ -1197,8 +1200,7 @@
 
     function deselectAll() {
       STATE.selNodeId = null; STATE.selConnId = null; STATE.selPathId = null;
-      document.getElementById('btnDelete').classList.add('hidden');
-      document.getElementById('btnDuplicate').classList.add('hidden');
+      document.getElementById('btnDelete').classList.add('hidden'); document.getElementById('btnDuplicate').classList.add('hidden');
       document.getElementById('inspIcon').setAttribute('data-lucide', 'sliders-horizontal'); lucide.createIcons();
       document.getElementById('inspTitle').innerText = 'Propiedades';
       document.getElementById('inspSubtitle').innerText = 'Selecciona un elemento';
@@ -1213,15 +1215,9 @@
         STATE.connections = STATE.connections.filter(c => c.from !== STATE.selNodeId && c.to !== STATE.selNodeId);
         STATE.pathways = STATE.pathways.filter(c => c.from !== STATE.selNodeId && c.to !== STATE.selNodeId);
         changed = true;
-      } else if (STATE.selConnId) {
-        STATE.connections = STATE.connections.filter(c => c.id !== STATE.selConnId);
-        changed = true;
-      } else if (STATE.selPathId) {
-        STATE.pathways = STATE.pathways.filter(p => p.id !== STATE.selPathId);
-        changed = true;
-      }
-      deselectAll(); updateAll(); 
-      if(changed) { showToast('Eliminado'); pushHistory(); }
+      } else if (STATE.selConnId) { STATE.connections = STATE.connections.filter(c => c.id !== STATE.selConnId); changed = true; } 
+      else if (STATE.selPathId) { STATE.pathways = STATE.pathways.filter(p => p.id !== STATE.selPathId); changed = true; }
+      deselectAll(); updateAll(); if(changed) { showToast('Eliminado'); pushHistory(); }
     }
 
     function duplicateSelected() {
@@ -1229,24 +1225,16 @@
       const n = STATE.nodes.find(x => x.id === STATE.selNodeId);
       if(!n) return;
       const copy = JSON.parse(JSON.stringify(n));
-      copy.id = 'n_' + Date.now();
-      copy.x += 40; copy.y += 40;
-      copy.name += ' (Copia)';
-      STATE.nodes.push(copy);
-      selectNode(copy);
-      updateAll(); showToast('Duplicado'); pushHistory();
+      copy.id = 'n_' + Date.now(); copy.x += 40; copy.y += 40; copy.name += ' (Copia)';
+      STATE.nodes.push(copy); selectNode(copy); updateAll(); showToast('Duplicado'); pushHistory();
     }
 
     function manualZoomCanvas(d) { STATE.zoom = Math.max(0.2, Math.min(4, Math.round((STATE.zoom + d)*10)/10)); updateTransform(); }
     function resetZoom() { STATE.zoom = 1; STATE.panX = 40; STATE.panY = 40; updateTransform(); }
-    function updateTransform() {
-      document.getElementById('canvasViewport').style.transform = `translate(${STATE.panX}px, ${STATE.panY}px) scale(${STATE.zoom})`;
-      document.getElementById('zoomText').innerText = `${Math.round(STATE.zoom*100)}%`;
-    }
+    function updateTransform() { document.getElementById('canvasViewport').style.transform = `translate(${STATE.panX}px, ${STATE.panY}px) scale(${STATE.zoom})`; document.getElementById('zoomText').innerText = `${Math.round(STATE.zoom*100)}%`; }
 
     async function handlePlanUpload(e) {
-      const file = e.target.files[0];
-      if(!file) return;
+      const file = e.target.files[0]; if(!file) return;
       if(file.type === 'application/pdf') {
         const url = URL.createObjectURL(file);
         const pdf = await pdfjsLib.getDocument(url).promise;
@@ -1257,24 +1245,20 @@
         await page.render({canvasContext: cvs.getContext('2d'), viewport}).promise;
         setBgImage(cvs.toDataURL('image/png'));
       } else {
-        const reader = new FileReader();
-        reader.onload = (evt) => setBgImage(evt.target.result);
-        reader.readAsDataURL(file);
+        const reader = new FileReader(); reader.onload = (evt) => setBgImage(evt.target.result); reader.readAsDataURL(file);
       }
       e.target.value = '';
     }
 
     function setBgImage(url) {
-      STATE.bgImage = url;
-      const img = document.getElementById('floorPlanImg');
-      img.src = url; img.onload = () => { document.getElementById('floorPlanWrapper').classList.remove('hidden'); document.getElementById('planControlBar').classList.remove('hidden'); saveState(); showToast('Plano Cargado. Recuerda calibrar la escala.'); };
+      STATE.bgImage = url; const img = document.getElementById('floorPlanImg'); img.src = url; 
+      img.onload = () => { document.getElementById('floorPlanWrapper').classList.remove('hidden'); document.getElementById('planControlBar').classList.remove('hidden'); saveState(); showToast('Plano Cargado. Recuerda calibrar la escala.'); };
     }
     function changePlanOpacity(v) { STATE.bgOpacity = v/100; document.getElementById('floorPlanImg').style.opacity = STATE.bgOpacity; }
     function removeFloorPlan() { STATE.bgImage = null; document.getElementById('floorPlanWrapper').classList.add('hidden'); document.getElementById('planControlBar').classList.add('hidden'); saveState(); }
 
     function startScaleCalibration() {
-      setMode('calibrate'); STATE.calibPoints = [];
-      document.getElementById('calibrationLine').classList.add('hidden');
+      setMode('calibrate'); STATE.calibPoints = []; document.getElementById('calibrationLine').classList.add('hidden');
       showToast('Haz clic en dos puntos del plano para definir una medida');
     }
     function cancelCalibration() { document.getElementById('modalCalibrate').classList.add('hidden'); document.getElementById('calibrationLine').classList.add('hidden'); setMode('select'); }
@@ -1300,34 +1284,22 @@
     
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
     function openManualModal() { document.getElementById('modalManual').classList.remove('hidden'); }
-    function openNotesModal() {
-      document.getElementById('projectNotesTextarea').value = STATE.projectNotes || '';
-      document.getElementById('modalNotes').classList.remove('hidden');
-    }
-    function saveNotes() {
-      STATE.projectNotes = document.getElementById('projectNotesTextarea').value;
-      saveState(); closeModal('modalNotes'); showToast('Notas guardadas');
-    }
+    function openNotesModal() { document.getElementById('projectNotesTextarea').value = STATE.projectNotes || ''; document.getElementById('modalNotes').classList.remove('hidden'); }
+    function saveNotes() { STATE.projectNotes = document.getElementById('projectNotesTextarea').value; saveState(); closeModal('modalNotes'); showToast('Notas guardadas'); }
 
     function openPvCalculatorModal() { 
       document.getElementById('modalSolar').classList.remove('hidden'); 
-      
-      // Auto-fetch kWp from Canvas
-      let totalWp = 0;
-      STATE.nodes.forEach(n => { totalWp += parseFloat(n.props?.pvWp) || 0; });
+      let totalWp = 0; STATE.nodes.forEach(n => { totalWp += parseFloat(n.props?.pvWp) || 0; });
       document.getElementById('calcSolarKwp').value = (totalWp / 1000).toFixed(2);
 
-      // Load previous settings if available
       const s = STATE.projectConfig.solarSettings || {};
       if(s.consumo) document.getElementById('calcSolarConsumo').value = s.consumo;
       if(s.tarifa) document.getElementById('calcSolarTarifa').value = s.tarifa;
       if(s.costo) document.getElementById('calcSolarCostoInv').value = s.costo;
-      
       runSolarCalc(); 
     }
 
     function runSolarCalc() {
-      // Technical NEC 690 calculations
       const n = +document.getElementById('calcSolarN').value || 1; 
       const t = +document.getElementById('calcSolarTmin').value || 0;
       const voc = +document.getElementById('calcSolarVoc').value || 0; 
@@ -1337,7 +1309,6 @@
       document.getElementById('resVoc').innerText = vocMax.toFixed(1) + ' V';
       document.getElementById('resAmp').innerText = (isc * 1.56).toFixed(1) + ' A';
 
-      // Financial and Generation calculations (Quetzales)
       const kwp = parseFloat(document.getElementById('calcSolarKwp').value) || 0;
       const hsp = parseFloat(document.getElementById('calcSolarHsp').value) || 5.0;
       const pr = parseFloat(document.getElementById('calcSolarPr').value) / 100;
@@ -1350,26 +1321,18 @@
       const tarifa = parseFloat(document.getElementById('calcSolarTarifa').value) || 0;
       const costoInv = parseFloat(document.getElementById('calcSolarCostoInv').value) || 1;
 
-      // Save for PDF export
-      STATE.projectConfig.solarSettings = {
-         consumo: consumoMensual,
-         tarifa: tarifa,
-         costo: costoInv,
-         genMensual: genMonthly
-      };
+      STATE.projectConfig.solarSettings = { consumo: consumoMensual, tarifa: tarifa, costo: costoInv, genMensual: genMonthly };
       saveState();
 
       let cobertura = (genMonthly / consumoMensual) * 100;
       document.getElementById('resCobertura').innerText = Math.min(100, cobertura).toFixed(1) + ' %';
       
-      // Calculate savings (Quetzales)
       const ahorroMensual = Math.min(genMonthly, consumoMensual) * tarifa;
-      document.getElementById('resAhorroMensual').innerText = 'Q ' + ahorroMensual.toFixed(2);
+      document.getElementById('resAhorroMensual').innerText = 'Q ' + ahorroMensual.toLocaleString('es-GT', {minimumFractionDigits: 2});
 
       const ahorroAnual = ahorroMensual * 12;
       let roi = 0;
       if(ahorroAnual > 0) roi = costoInv / ahorroAnual;
-      
       document.getElementById('resROI').innerText = roi > 0 ? roi.toFixed(1) + ' Años' : 'N/A';
     }
 
@@ -1377,26 +1340,16 @@
       const adj = {}; const inDegree = {};
       const validNodes = STATE.nodes.filter(n => n.type !== 'anchor');
       validNodes.forEach(n => { adj[n.id] = []; inDegree[n.id] = 0; });
-      
-      STATE.connections.forEach(c => {
-         if(adj[c.from] && inDegree[c.to] !== undefined) {
-             adj[c.from].push({to: c.to, type: c.type});
-             inDegree[c.to]++;
-         }
-      });
+      STATE.connections.forEach(c => { if(adj[c.from] && inDegree[c.to] !== undefined) { adj[c.from].push({to: c.to, type: c.type}); inDegree[c.to]++; } });
 
       const roots = validNodes.filter(n => inDegree[n.id] === 0);
       if(roots.length === 0 && validNodes.length > 0) roots.push(validNodes[0]); 
 
       let html = '<ul class="list-none space-y-2">';
-
       function traverse(nodeId, depth) {
-         const n = validNodes.find(x => x.id === nodeId);
-         if(!n) return '';
+         const n = validNodes.find(x => x.id === nodeId); if(!n) return '';
          const def = LIB_DEFS[n.type];
-         
-         let res = `<li class="relative text-slate-300">`;
-         res += `<div class="flex items-center gap-2 py-1 ${depth>0?'ml-6 before:content-[\'\'] before:absolute before:left-[-14px] before:top-4 before:w-3 before:h-px before:bg-slate-700':''}">`;
+         let res = `<li class="relative text-slate-300"><div class="flex items-center gap-2 py-1 ${depth>0?'ml-6 before:content-[\'\'] before:absolute before:left-[-14px] before:top-4 before:w-3 before:h-px before:bg-slate-700':''}">`;
          res += `<div class="p-1 rounded bg-slate-800 border border-slate-700 text-[${def.color}]"><i data-lucide="${def.icon}" class="w-4 h-4"></i></div>`;
          res += `<div><div class="font-medium text-xs text-slate-100">${n.name}</div><div class="text-[9px] text-slate-500">${n.props.brand||''} ${n.props.model||def.cat}</div></div></div>`;
 
@@ -1406,43 +1359,29 @@
                 const style = LINE_STYLES[edge.type] || LINE_STYLES.poe;
                 res += `<div class="ml-6 text-[9px] text-slate-500 flex items-center gap-1 mt-1 mb-0.5"><i data-lucide="cable" class="w-3 h-3 text-[${style.color}]"></i> Medio: ${style.label}</div>`;
                 res += traverse(edge.to, depth + 1);
-             });
-             res += `</ul>`;
+             }); res += `</ul>`;
          }
-         res += `</li>`;
-         return res;
+         res += `</li>`; return res;
       }
-
       roots.forEach(r => { html += traverse(r.id, 0); });
-      html += '</ul>';
-      return html;
+      html += '</ul>'; return html;
     }
 
     function switchBomTab(tab) {
-      document.getElementById('bomTabTables').classList.add('hidden');
-      document.getElementById('bomTabUnifilar').classList.add('hidden');
-      document.getElementById('tabBtnTables').classList.replace('text-emerald-400', 'text-slate-400');
-      document.getElementById('tabBtnTables').classList.replace('border-emerald-400', 'border-transparent');
-      document.getElementById('tabBtnUnifilar').classList.replace('text-emerald-400', 'text-slate-400');
-      document.getElementById('tabBtnUnifilar').classList.replace('border-emerald-400', 'border-transparent');
+      document.getElementById('bomTabTables').classList.add('hidden'); document.getElementById('bomTabUnifilar').classList.add('hidden');
+      document.getElementById('tabBtnTables').classList.replace('text-emerald-400', 'text-slate-400'); document.getElementById('tabBtnTables').classList.replace('border-emerald-400', 'border-transparent');
+      document.getElementById('tabBtnUnifilar').classList.replace('text-emerald-400', 'text-slate-400'); document.getElementById('tabBtnUnifilar').classList.replace('border-emerald-400', 'border-transparent');
 
       if(tab === 'tables') {
-        document.getElementById('bomTabTables').classList.remove('hidden');
-        document.getElementById('tabBtnTables').classList.replace('text-slate-400', 'text-emerald-400');
-        document.getElementById('tabBtnTables').classList.replace('border-transparent', 'border-emerald-400');
+        document.getElementById('bomTabTables').classList.remove('hidden'); document.getElementById('tabBtnTables').classList.replace('text-slate-400', 'text-emerald-400'); document.getElementById('tabBtnTables').classList.replace('border-transparent', 'border-emerald-400');
       } else {
-        document.getElementById('bomTabUnifilar').classList.remove('hidden');
-        document.getElementById('tabBtnUnifilar').classList.replace('text-slate-400', 'text-emerald-400');
-        document.getElementById('tabBtnUnifilar').classList.replace('border-transparent', 'border-emerald-400');
-        document.getElementById('unifilarTreeContainer').innerHTML = generateUnifilarHTML();
-        lucide.createIcons();
+        document.getElementById('bomTabUnifilar').classList.remove('hidden'); document.getElementById('tabBtnUnifilar').classList.replace('text-slate-400', 'text-emerald-400'); document.getElementById('tabBtnUnifilar').classList.replace('border-transparent', 'border-emerald-400');
+        document.getElementById('unifilarTreeContainer').innerHTML = generateUnifilarHTML(); lucide.createIcons();
       }
     }
 
     function openBomModal() {
-      document.getElementById('modalBOM').classList.remove('hidden');
-      switchBomTab('tables');
-      
+      document.getElementById('modalBOM').classList.remove('hidden'); switchBomTab('tables');
       const validNodes = STATE.nodes.filter(n => n.type !== 'anchor');
       const tNodes = document.getElementById('bomTableNodes');
       const grouped = {};
@@ -1498,10 +1437,14 @@
     }
 
     function exportBomPDF() {
+      runSolarCalc(); // Asegurar datos recientes del ROI
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF('p', 'pt', 'a4');
       
-      if(STATE.projectConfig.logoDataUrl) doc.addImage(STATE.projectConfig.logoDataUrl, 'PNG', 40, 30, 80, 40, '', 'FAST');
+      if(STATE.projectConfig.logoDataUrl) {
+          try { doc.addImage(STATE.projectConfig.logoDataUrl, 40, 30, 80, 40); } 
+          catch(e) { console.error("Error logo", e); }
+      }
       doc.setFontSize(16); doc.setTextColor(40);
       doc.text("TechDiagram Pro - Memoria de Proyecto", 130, 45);
       doc.setFontSize(11); doc.setTextColor(100);
@@ -1510,107 +1453,101 @@
 
       let yPos = 110;
       const parseTable = (id) => {
-        const rows = [];
-        document.querySelectorAll(`#${id} tr`).forEach(tr => {
+        const rows = []; document.querySelectorAll(`#${id} tr`).forEach(tr => {
           const cells = Array.from(tr.querySelectorAll('th, td')).map(td => td.innerText);
           if(cells.length>0) rows.push(cells);
-        });
-        return { head: [rows[0]], body: rows.slice(1) };
+        }); return { head: [rows[0]], body: rows.slice(1) };
       };
 
       const nodesData = parseTable('bomTableNodes');
-      doc.setFontSize(12); doc.setTextColor(0); doc.text("Equipos y Dispositivos", 40, yPos);
-      doc.autoTable({ startY: yPos+10, head: nodesData.head, body: nodesData.body, styles: { fontSize: 8 }, headStyles: { fillColor: [79, 70, 229] } });
-      yPos = doc.lastAutoTable.finalY + 30;
+      if (nodesData.body.length > 0) {
+          doc.setFontSize(12); doc.setTextColor(0); doc.text("Equipos y Dispositivos", 40, yPos);
+          doc.autoTable({ startY: yPos+10, head: nodesData.head, body: nodesData.body, styles: { fontSize: 8 }, headStyles: { fillColor: [79, 70, 229] } });
+          yPos = doc.lastAutoTable.finalY + 30;
+      }
 
       const pathData = parseTable('bomTablePathways');
-      if(yPos > 700) { doc.addPage(); yPos = 40; }
-      doc.text("Canalizaciones y Soportes (TIA-569)", 40, yPos);
-      doc.autoTable({ startY: yPos+10, head: pathData.head, body: pathData.body, styles: { fontSize: 8 }, headStyles: { fillColor: [8, 145, 178] } });
-      yPos = doc.lastAutoTable.finalY + 30;
+      if (pathData.body.length > 0) {
+          if(yPos > 700) { doc.addPage(); yPos = 40; }
+          doc.text("Canalizaciones y Soportes (TIA-569)", 40, yPos);
+          doc.autoTable({ startY: yPos+10, head: pathData.head, body: pathData.body, styles: { fontSize: 8 }, headStyles: { fillColor: [8, 145, 178] } });
+          yPos = doc.lastAutoTable.finalY + 30;
+      }
 
       const cableData = parseTable('bomTableCables');
-      if(yPos > 700) { doc.addPage(); yPos = 40; }
-      doc.text("Cableado y Enlaces (+10% Holgura)", 40, yPos);
-      doc.autoTable({ startY: yPos+10, head: cableData.head, body: cableData.body, styles: { fontSize: 8 }, headStyles: { fillColor: [2, 132, 199] } });
-
-      doc.addPage();
-      doc.setFontSize(14); doc.setTextColor(0);
-      doc.text("Diagrama Unifilar Lógico", 40, 40);
-      doc.setFontSize(9); doc.setTextColor(80);
-      
-      let uY = 60;
-      const adj = {}; const inDegree = {};
-      const validNodes = STATE.nodes.filter(n => n.type !== 'anchor');
-      
-      validNodes.forEach(n => { adj[n.id] = []; inDegree[n.id] = 0; });
-      STATE.connections.forEach(c => { if(adj[c.from] && inDegree[c.to] !== undefined) { adj[c.from].push({to: c.to, type: c.type}); inDegree[c.to]++; } });
-      const roots = validNodes.filter(n => inDegree[n.id] === 0);
-
-      function printTree(nodeId, depth) {
-          if(uY > 780) { doc.addPage(); uY = 40; }
-          const n = validNodes.find(x => x.id === nodeId);
-          if(!n) return;
-          const indent = 40 + (depth * 20);
-          doc.setTextColor(0); doc.setFont("helvetica", "bold");
-          doc.text(`[*] ${n.name} (${n.props.brand||''} ${n.props.model||''})`, indent, uY);
-          uY += 14;
-          adj[nodeId].forEach(edge => {
-              if(uY > 780) { doc.addPage(); uY = 40; }
-              const style = LINE_STYLES[edge.type] || LINE_STYLES.poe;
-              doc.setTextColor(120); doc.setFont("helvetica", "normal");
-              doc.text(`|-- [Cable: ${style.label}]`, indent + 10, uY);
-              uY += 14;
-              printTree(edge.to, depth + 1);
-          });
+      if (cableData.body.length > 0) {
+          if(yPos > 700) { doc.addPage(); yPos = 40; }
+          doc.text("Cableado y Enlaces (+10% Holgura)", 40, yPos);
+          doc.autoTable({ startY: yPos+10, head: cableData.head, body: cableData.body, styles: { fontSize: 8 }, headStyles: { fillColor: [2, 132, 199] } });
       }
-      roots.forEach(r => { printTree(r.id, 0); uY += 10; });
 
-      // ROI / Financial Section if solar is present
+      // Unifilar
+      const validNodes = STATE.nodes.filter(n => n.type !== 'anchor');
+      if(validNodes.length > 0 && STATE.connections.length > 0) {
+          doc.addPage(); doc.setFontSize(14); doc.setTextColor(0);
+          doc.text("Diagrama Unifilar Lógico", 40, 40); doc.setFontSize(9); doc.setTextColor(80);
+          
+          let uY = 60; const adj = {}; const inDegree = {};
+          validNodes.forEach(n => { adj[n.id] = []; inDegree[n.id] = 0; });
+          STATE.connections.forEach(c => { if(adj[c.from] && inDegree[c.to] !== undefined) { adj[c.from].push({to: c.to, type: c.type}); inDegree[c.to]++; } });
+          const roots = validNodes.filter(n => inDegree[n.id] === 0);
+
+          function printTree(nodeId, depth) {
+              if(uY > 780) { doc.addPage(); uY = 40; }
+              const n = validNodes.find(x => x.id === nodeId); if(!n) return;
+              const indent = 40 + (depth * 20); doc.setTextColor(0); doc.setFont("helvetica", "bold");
+              doc.text(`[*] ${n.name} (${n.props.brand||''} ${n.props.model||''})`, indent, uY); uY += 14;
+              adj[nodeId].forEach(edge => {
+                  if(uY > 780) { doc.addPage(); uY = 40; }
+                  const style = LINE_STYLES[edge.type] || LINE_STYLES.poe; doc.setTextColor(120); doc.setFont("helvetica", "normal");
+                  doc.text(`|-- [Cable: ${style.label}]`, indent + 10, uY); uY += 14; printTree(edge.to, depth + 1);
+              });
+          }
+          roots.forEach(r => { printTree(r.id, 0); uY += 10; });
+      }
+
+      // ROI / Financial Section in Quetzales
       const s = STATE.projectConfig.solarSettings;
-      let totalWp = 0;
-      STATE.nodes.forEach(n => { totalWp += parseFloat(n.props?.pvWp) || 0; });
+      let totalWp = 0; STATE.nodes.forEach(n => { totalWp += parseFloat(n.props?.pvWp) || 0; });
 
       if (totalWp > 0 && s && s.consumo) {
          doc.addPage();
+         if(STATE.projectConfig.logoDataUrl) { try { doc.addImage(STATE.projectConfig.logoDataUrl, 40, 30, 80, 40); } catch(e){} }
          doc.setFontSize(16); doc.setTextColor(0);
-         doc.text("Estudio de Generación Solar y ROI", 40, 50);
+         doc.text("Estudio de Generación Solar y ROI", 40, 90);
          
          doc.setFontSize(11); doc.setTextColor(60);
-         doc.text(`Potencia Instalada Total: ${(totalWp / 1000).toFixed(2)} kWp`, 40, 80);
-         doc.text(`Generación Mensual Estimada: ${s.genMensual.toFixed(1)} kWh`, 40, 100);
-         doc.text(`Consumo del Cliente: ${s.consumo} kWh/mes`, 40, 120);
+         doc.text(`Potencia Instalada Total: ${(totalWp / 1000).toFixed(2)} kWp`, 40, 120);
+         doc.text(`Generación Mensual Estimada: ${s.genMensual.toFixed(1)} kWh`, 40, 140);
+         doc.text(`Consumo Mensual del Cliente: ${s.consumo} kWh/mes`, 40, 160);
          
          const cobertura = Math.min(100, (s.genMensual / s.consumo) * 100);
-         doc.text(`Cobertura Energética: ${cobertura.toFixed(1)} %`, 40, 140);
+         doc.text(`Cobertura Energética: ${cobertura.toFixed(1)} %`, 40, 180);
          
-         doc.setFontSize(14); doc.setTextColor(2, 132, 199);
-         doc.text("Análisis Financiero (Quetzales)", 40, 180);
+         doc.setFontSize(14); doc.setTextColor(2, 132, 199); // Azul
+         doc.text("Análisis Financiero", 40, 220);
          doc.setFontSize(11); doc.setTextColor(60);
          
          const ahorroMes = Math.min(s.genMensual, s.consumo) * s.tarifa;
-         doc.text(`Tarifa Eléctrica Promedio: Q ${s.tarifa} / kWh`, 40, 210);
-         doc.text(`Ahorro Mensual Proyectado: Q ${ahorroMes.toFixed(2)}`, 40, 230);
-         doc.text(`Ahorro Anual Proyectado: Q ${(ahorroMes * 12).toFixed(2)}`, 40, 250);
-         doc.text(`Costo Estimado de Instalación: Q ${s.costo}`, 40, 270);
+         doc.text(`Tarifa Eléctrica Promedio: Q ${s.tarifa} / kWh`, 40, 250);
+         doc.text(`Ahorro Mensual Proyectado: Q ${ahorroMes.toLocaleString('es-GT', {minimumFractionDigits: 2})}`, 40, 270);
+         doc.text(`Ahorro Anual Proyectado: Q ${(ahorroMes * 12).toLocaleString('es-GT', {minimumFractionDigits: 2})}`, 40, 290);
+         doc.text(`Costo Estimado del Sistema: Q ${s.costo.toLocaleString('es-GT', {minimumFractionDigits: 2})}`, 40, 310);
          
          const roi = s.costo / (ahorroMes * 12);
-         doc.setFontSize(12); doc.setTextColor(16, 185, 129);
-         doc.text(`Retorno de Inversión (ROI): ${roi.toFixed(1)} Años`, 40, 310);
+         doc.setFontSize(12); doc.setTextColor(16, 185, 129); // Verde
+         doc.text(`Retorno de Inversión (ROI Proyectado): ${roi.toFixed(1)} Años`, 40, 350);
       }
 
-      // Descriptive Notes Section
+      // Descriptive Notes
       if (STATE.projectNotes && STATE.projectNotes.trim() !== '') {
-         doc.addPage();
-         doc.setFontSize(14); doc.setTextColor(0);
-         doc.text("Memoria Descriptiva y Notas", 40, 40);
+         doc.addPage(); doc.setFontSize(14); doc.setTextColor(0); doc.text("Memoria Descriptiva y Notas", 40, 40);
          doc.setFontSize(10); doc.setTextColor(60); doc.setFont("helvetica", "normal");
-         const splitText = doc.splitTextToSize(STATE.projectNotes, 510);
-         doc.text(splitText, 40, 70);
+         const splitText = doc.splitTextToSize(STATE.projectNotes, 510); doc.text(splitText, 40, 70);
       }
 
-      doc.save(`Memoria_${STATE.projectConfig.name.replace(/\s+/g, '_')}.pdf`);
-      showToast('Proyecto Exportado a PDF');
+      doc.save(`Reporte_Ingenieria_${STATE.projectConfig.name.replace(/\s+/g, '_')}.pdf`);
+      showToast('Reporte PDF Generado');
     }
 
     function openProjectManager() { document.getElementById('modalProjects').classList.remove('hidden'); renderLocalProjects(); }
